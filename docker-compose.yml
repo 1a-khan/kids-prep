@@ -1,6 +1,7 @@
 services:
   kids-prep:
     image: ghcr.io/1a-khan/kids-prep:latest
+    pull_policy: always
     restart: unless-stopped
     ports:
       - "4000:4000"
