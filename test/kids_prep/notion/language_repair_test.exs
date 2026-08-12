@@ -79,6 +79,44 @@ defmodule KidsPrep.Notion.LanguageRepairTest do
     assert text(word_problem, "Explanation") =~ "minus rechnen"
   end
 
+  test "keeps detailed explanations when material is already translated" do
+    verb =
+      repaired(%{
+        "Subject" => "German",
+        "Skill" => "Verbendungen",
+        "Prompt" => "Wähle das richtige Verb: sie ___ (trinken)",
+        "Correct Answer" => "trinkt",
+        "Name" => "Mustafa Deutsch Verbendungen"
+      })
+
+    multiplication =
+      repaired(%{
+        "Subject" => "Maths",
+        "Skill" => "Einmaleins",
+        "Prompt" => "4 x 6 = ?",
+        "Correct Answer" => "24",
+        "Name" => "Mustafa Mathe Einmaleins"
+      })
+
+    assert text(verb, "Explanation") =~ "Zu 'sie' passt 'trinkt'"
+    assert text(multiplication, "Explanation") =~ "4 Gruppen mit je 6"
+  end
+
+  test "repairs legacy subtraction skill label" do
+    subtraction =
+      repaired(%{
+        "Subject" => "Maths",
+        "Skill" => "Subtraction",
+        "Prompt" => "42 - 8 = ?",
+        "Correct Answer" => "34",
+        "Name" => "Mihrimah Maths Subtraction"
+      })
+
+    assert text(subtraction, "Skill") == "Subtraktion"
+    assert title(subtraction, "Name") == "Mihrimah Mathe Subtraktion"
+    assert text(subtraction, "Explanation") =~ "Zerlege die kleinere Zahl"
+  end
+
   defp repaired(properties), do: LanguageRepair.repaired_properties(properties)
 
   defp text(properties, key) do

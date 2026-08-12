@@ -138,6 +138,9 @@ defmodule KidsPrep.Notion.LanguageRepair do
     "Jedes deutsche Nomen hat einen Artikel. Sprich es als kleines Paket: '#{answer} #{noun}'."
   end
 
+  defp german_explanation("Verbendungen", prompt, answer),
+    do: german_explanation("Verb endings", prompt, answer)
+
   defp german_explanation("Verb endings", prompt, answer) do
     person =
       case Regex.run(~r/: ([^ ]+) ___/, prompt) do
@@ -147,6 +150,9 @@ defmodule KidsPrep.Notion.LanguageRepair do
 
     "Schau zuerst auf die Person. Zu '#{person}' passt '#{answer}', deshalb ändert sich die Endung."
   end
+
+  defp german_explanation("Satzbau", prompt, answer),
+    do: german_explanation("Word order", prompt, answer)
 
   defp german_explanation("Word order", _prompt, _answer),
     do: "In einem einfachen deutschen Hauptsatz steht das Verb meistens an zweiter Stelle."
@@ -176,9 +182,15 @@ defmodule KidsPrep.Notion.LanguageRepair do
     end
   end
 
+  defp maths_explanation("Plusrechnen", prompt, answer),
+    do: maths_explanation("Addition", prompt, answer)
+
   defp maths_explanation("Subtraction", _prompt, _answer),
     do:
       "Zerlege die kleinere Zahl in Zehner und Einer. Dann zählst du in zwei ruhigen Schritten zurück."
+
+  defp maths_explanation("Subtraktion", prompt, answer),
+    do: maths_explanation("Subtraction", prompt, answer)
 
   defp maths_explanation("Times tables", prompt, _answer) do
     case numbers(prompt) do
@@ -190,6 +202,9 @@ defmodule KidsPrep.Notion.LanguageRepair do
     end
   end
 
+  defp maths_explanation("Einmaleins", prompt, answer),
+    do: maths_explanation("Times tables", prompt, answer)
+
   defp maths_explanation("Word problem", prompt, _answer) do
     case numbers(prompt) do
       [apples, eaten | _] ->
@@ -199,6 +214,9 @@ defmodule KidsPrep.Notion.LanguageRepair do
         "'Übrig bleiben' bedeutet: minus rechnen."
     end
   end
+
+  defp maths_explanation("Textaufgabe", prompt, answer),
+    do: maths_explanation("Word problem", prompt, answer)
 
   defp maths_explanation(_skill, _prompt, _answer), do: "Rechne Schritt für Schritt."
 
@@ -217,6 +235,7 @@ defmodule KidsPrep.Notion.LanguageRepair do
   defp german_skill(skill), do: skill
 
   defp maths_skill("Addition"), do: "Plusrechnen"
+  defp maths_skill("Subtraction"), do: "Subtraktion"
   defp maths_skill("Times tables"), do: "Einmaleins"
   defp maths_skill("Word problem"), do: "Textaufgabe"
   defp maths_skill(skill), do: skill
