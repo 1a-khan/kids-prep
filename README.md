@@ -164,6 +164,12 @@ Repair existing Deutsch/Mathe question-bank rows so prompts, skills, tips, and e
 OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_ROLE_ID=your_approle_role_id OPENBAO_SECRET_ID=your_approle_secret_id OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.repair_german_material
 ```
 
+In a release container such as Coolify, run the same repair through release eval:
+
+```bash
+/app/bin/kids_prep eval "KidsPrep.Release.repair_german_material()"
+```
+
 Push recent SQLite results to Notion:
 
 ```bash
