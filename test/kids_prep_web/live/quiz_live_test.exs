@@ -26,6 +26,15 @@ defmodule KidsPrepWeb.QuizLiveTest do
     assert view |> element("button", "Deutsch") |> render_click() =~ "Frage 1"
   end
 
+  test "admin can request a SQLite question cache refresh", %{conn: conn} do
+    conn = log_in(conn, "admin", "test-admin-password")
+
+    {:ok, view, html} = live(conn, ~p"/")
+
+    assert html =~ "Fragen aktualisieren"
+    assert view |> element("button", "Fragen aktualisieren") |> render_click() =~ "Module"
+  end
+
   test "learner logs in directly to their own subject picker", %{conn: conn} do
     conn = log_in(conn, "mustafa", "test-mustafa-password")
 

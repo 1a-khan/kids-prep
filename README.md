@@ -164,7 +164,9 @@ Push recent SQLite results to Notion:
 OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_ROLE_ID=your_approle_role_id OPENBAO_SECRET_ID=your_approle_secret_id OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.push_results
 ```
 
-When the Notion token is available through OpenBao or `NOTION_TOKEN`, the app tries Notion first for today's module and falls back to local generated questions if Notion is unavailable.
+When the Notion token is available through OpenBao or `NOTION_TOKEN`, the scheduler prepares Notion modules and warms a local SQLite question cache. The LiveView quiz reads from SQLite first, so children are not waiting on Notion while clicking through the app. If the cache is empty or contains invalid language material, the app falls back to locally generated daily questions.
+
+Admins can click **Fragen aktualisieren** in the app to refresh today's SQLite question cache from Notion after new material is added or corrected.
 
 ## DevSecOps and deployment
 

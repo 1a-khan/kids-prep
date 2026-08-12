@@ -26,6 +26,7 @@ defmodule KidsPrepWeb.QuizLive do
       |> assign(:mode, initial_mode(current_user))
       |> assign(:started_at, nil)
       |> assign(:saved_result, nil)
+      |> assign(:cache_refresh, nil)
 
     {:ok, socket}
   end
@@ -40,6 +41,25 @@ defmodule KidsPrepWeb.QuizLive do
       {:noreply, assign(socket, child_slug: child_slug, mode: :subject)}
     else
       {:noreply, put_flash(socket, :error, "Dieses Kind ist für dein Konto nicht verfügbar.")}
+    end
+  end
+
+  def handle_event("refresh_cache", _params, socket) do
+    if Accounts.admin?(socket.assigns.current_user) do
+      results = Learning.refresh_daily_cache()
+      ok_count = Enum.count(results, &match?({:ok, _}, &1))
+      error_count = length(results) - ok_count
+
+      message =
+        if error_count == 0 do
+          "#{ok_count} Module aus Notion in SQLite aktualisiert."
+        else
+          "#{ok_count} Module aktualisiert, #{error_count} Module nicht übernommen. Bitte Notion-Fragen und Sprache prüfen."
+        end
+
+      {:noreply, assign(socket, :cache_refresh, message)}
+    else
+      {:noreply, put_flash(socket, :error, "Nur Admins dürfen die Fragen aktualisieren.")}
     end
   end
 
@@ -136,7 +156,8 @@ defmodule KidsPrepWeb.QuizLive do
      |> assign(:selected, nil)
      |> assign(:feedback, nil)
      |> assign(:answers, [])
-     |> assign(:wrong, [])}
+     |> assign(:wrong, [])
+     |> assign(:cache_refresh, nil)}
   end
 
   defp finish_quiz(%{assigns: %{mode: :retry}} = socket), do: assign(socket, mode: :done)
