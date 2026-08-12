@@ -12,6 +12,7 @@ Schedule:
 Goal:
 - Create fresh Gymnasium-prep questions in Notion for Mihrimah and Mustafa.
 - Adapt the new questions based on recent performance data.
+- Create separate, age-appropriate questionnaires for each child. Mihrimah and Mustafa must not receive the same question set unless a specific basic review question is intentionally reused.
 - Keep the app language rules correct.
 
 Before creating questions:
@@ -31,8 +32,30 @@ Important sync assumption:
 - Use Notion Results and Weak Skills as the scheduler input. Do not guess hidden SQLite data.
 
 Children:
-- Mihrimah, age 8, completed class 2 in Turkiye.
-- Mustafa, age 10, completed class 4 in Turkiye.
+- Mihrimah:
+  - Age 8.
+  - Completed class 2 in Turkiye.
+  - Target track: class 3 bridge level, gently preparing toward Gymnasium style.
+  - Question style: shorter text, fewer steps, concrete examples, friendly wording.
+  - Maths level: addition/subtraction, early multiplication, place value, simple word problems, basic geometry, time and money.
+  - German level: articles, simple nouns, basic verbs, short sentence order, everyday vocabulary, reading short passages.
+  - English level: beginner vocabulary, simple classroom words, colors, family, animals, short sentences.
+- Mustafa:
+  - Age 10.
+  - Completed class 4 in Turkiye.
+  - Target track: class 5 Gymnasium bridge level.
+  - Question style: more independent reasoning, longer texts, multi-step problems, careful reading.
+  - Maths level: multiplication/division, fractions basics, units, word problems, geometry, patterns, early logical reasoning.
+  - German level: articles, cases in simple contexts, verb forms, sentence order, reading comprehension, short writing logic.
+  - English level: elementary A1/A1+ vocabulary, short grammar patterns, reading short dialogues, simple comprehension.
+
+Child differentiation rules:
+- Generate Mihrimah and Mustafa modules separately.
+- Use each child's own recent Results and Weak Skills rows only when adapting their module.
+- Do not let Mustafa's weak skills increase Mihrimah's difficulty.
+- Do not let Mihrimah's weak skills reduce Mustafa's difficulty.
+- If both children need the same skill, create different prompts at different difficulty levels.
+- Question Key must include the child slug so question reuse is explicit and traceable.
 
 Subjects:
 - German
@@ -63,16 +86,19 @@ Adaptive rules:
 For each child and subject:
 1. Review the latest 5 Results rows, newest first.
 2. Review matching Weak Skills rows, sorted by Priority and Mistake Count.
-3. Choose level:
+3. Start from the child's baseline:
+   - Mihrimah baseline: level 1.
+   - Mustafa baseline: level 2.
+4. Choose today's level:
    - If the latest 2 completed modules are both at least 85 percent, increase difficulty by 1 level, max level 3.
    - If the latest average is below 60 percent, keep or reduce difficulty and focus on review.
    - Otherwise keep the current level and target weak skills.
-4. Question mix:
+5. Question mix:
    - 60 percent weak-skill practice from Notion Weak Skills.
    - 30 percent balanced grade-appropriate practice.
    - 10 percent gentle challenge questions when recent results are strong.
-5. Keep questions friendly, short, and age-appropriate.
-6. Every wrong answer should have a useful explanation that tells the child why the chosen answer is wrong and how to think correctly next time.
+6. Keep questions friendly, short, and age-appropriate.
+7. Every wrong answer should have a useful explanation that tells the child why the chosen answer is wrong and how to think correctly next time.
 
 Question volume:
 - Create enough questions for about 45 minutes per subject.
@@ -91,6 +117,9 @@ Notion writes:
 7. Do not create duplicate rows for an existing complete module.
 
 Required quality checks before finishing:
+- Mihrimah and Mustafa have separate modules and different age-appropriate question sets.
+- Mihrimah material matches class 3 bridge level unless her own results justify level-up.
+- Mustafa material matches class 5 Gymnasium bridge level unless his own results justify review.
 - German and Maths prompts, choices, answers, skills, tips, and explanations are German.
 - English prompts, choices, and answers are English; explanations are German.
 - Every question has exactly one correct answer.
