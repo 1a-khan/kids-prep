@@ -209,6 +209,7 @@ The repository includes:
 - `Dockerfile` with a multi-stage Phoenix release build and non-root runtime user.
 - `docker-compose.yml` for Coolify-style image deployment with a persistent SQLite volume at `/app/data`.
 - `docs/devsecops.md` with the pipeline and deployment notes.
+- `docs/chatgpt-daily-scheduler-prompt.md` with the reusable weekday ChatGPT prompt for adaptive Notion question generation.
 
 CI gates:
 
