@@ -12,6 +12,8 @@ defmodule KidsPrep.Learning.Result do
     field :duration_seconds, :integer
     field :wrong_questions, :map, default: %{"items" => []}
     field :answers, :map, default: %{"items" => []}
+    field :notion_synced_at, :utc_datetime
+    field :notion_sync_error, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -27,7 +29,9 @@ defmodule KidsPrep.Learning.Result do
       :total,
       :duration_seconds,
       :wrong_questions,
-      :answers
+      :answers,
+      :notion_synced_at,
+      :notion_sync_error
     ])
     |> validate_required([:child_slug, :child_name, :subject, :quiz_date, :score, :total])
   end

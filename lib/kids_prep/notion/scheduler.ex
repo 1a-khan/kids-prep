@@ -20,12 +20,28 @@ defmodule KidsPrep.Notion.Scheduler do
     if Sync.enabled?() do
       today = Date.utc_today()
       tomorrow = Date.add(today, 1)
+      sync_unsynced_results()
       generate_daily_modules(today)
       generate_daily_modules(tomorrow)
     end
 
     Process.send_after(self(), :run, @check_interval)
     {:noreply, state}
+  end
+
+  defp sync_unsynced_results do
+    results = KidsPrep.Learning.sync_unsynced_results()
+    errors = Enum.reject(results, &match?({:ok, _}, &1))
+
+    if errors != [] do
+      Logger.warning("Notion result sync had errors: #{inspect(errors)}")
+    end
+  rescue
+    exception ->
+      Logger.warning("Notion result sync failed: #{Exception.message(exception)}")
+  catch
+    kind, reason ->
+      Logger.warning("Notion result sync failed: #{inspect({kind, reason})}")
   end
 
   defp generate_daily_modules(date) do

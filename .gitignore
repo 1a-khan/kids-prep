@@ -10,4 +10,6 @@
 /.env
 /.env.*
 !/.env.example
+/inventory.ini
+/playbooks/install_elixir.yml
 erl_crash.dump

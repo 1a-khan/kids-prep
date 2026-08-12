@@ -10,15 +10,17 @@ defmodule Mix.Tasks.KidsPrep.Notion.PushResults do
     Mix.Task.run("app.start")
 
     if Notion.Sync.enabled?() do
-      Learning.recent_results(50)
-      |> Enum.each(fn result ->
-        Mix.shell().info("pushing result #{result.id} #{result.child_name} #{result.subject}")
-        Notion.Sync.push_result(result)
-      end)
+      results = Learning.sync_unsynced_results(100)
+      ok_count = Enum.count(results, &match?({:ok, _}, &1))
+      error_count = length(results) - ok_count
+
+      Mix.shell().info("Synced #{ok_count} SQLite results to Notion. Errors: #{error_count}.")
+
+      results
+      |> Enum.reject(&match?({:ok, _}, &1))
+      |> Enum.each(&Mix.shell().error(inspect(&1)))
     else
-      Mix.shell().error(
-        "NOTION_TOKEN is missing. Create an internal Notion integration and set NOTION_TOKEN."
-      )
+      Mix.shell().error("Notion is not configured. Provide OpenBao credentials or NOTION_TOKEN.")
     end
   end
 end

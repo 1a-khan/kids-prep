@@ -60,9 +60,9 @@ defmodule KidsPrep.Learning.Material do
       german_learning_text?(question.explanation)
   end
 
-  def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
+  def daily_questions(child_slug, subject, date \\ Date.utc_today(), opts \\ []) do
     seed = :erlang.phash2({child_slug, subject, date})
-    level = if child_slug == "mustafa", do: 2, else: 1
+    level = Keyword.get(opts, :level) || if child_slug == "mustafa", do: 2, else: 1
 
     subject
     |> build_subject(level, seed)
@@ -145,7 +145,7 @@ defmodule KidsPrep.Learning.Material do
     word_order_questions =
       sentence_words
       |> rotate(seed + 8)
-      |> Enum.take(if(level == 2, do: 7, else: 4))
+      |> Enum.take(if(level >= 2, do: 7, else: 4))
       |> Enum.map(fn parts ->
         answer = Tuple.to_list(parts) |> Enum.join(" ")
 
@@ -250,7 +250,7 @@ defmodule KidsPrep.Learning.Material do
     reading_questions =
       reading
       |> rotate(seed + 9)
-      |> Enum.take(if(level == 2, do: 5, else: 3))
+      |> Enum.take(if(level >= 2, do: 5, else: 3))
       |> Enum.map(fn {text, prompt, answer} ->
         q(
           "english",
@@ -267,7 +267,7 @@ defmodule KidsPrep.Learning.Material do
   end
 
   defp build_subject("maths", level, seed) do
-    limit = if level == 2, do: 120, else: 60
+    limit = if level >= 3, do: 160, else: if(level >= 2, do: 120, else: 60)
 
     arithmetic =
       for n <- 1..14 do
@@ -304,7 +304,7 @@ defmodule KidsPrep.Learning.Material do
       end
 
     multiplication =
-      for n <- 1..if(level == 2, do: 8, else: 4) do
+      for n <- 1..if(level >= 2, do: 8, else: 4) do
         a = rem(seed + n, 9) + 2
         b = rem(seed + n * 3, 9) + 2
         answer = a * b
@@ -321,7 +321,7 @@ defmodule KidsPrep.Learning.Material do
       end
 
     word =
-      for n <- 1..if(level == 2, do: 5, else: 3) do
+      for n <- 1..if(level >= 2, do: 5, else: 3) do
         apples = rem(seed + n * 4, 20) + 8
         eaten = rem(seed + n * 6, 7) + 2
         answer = apples - eaten
