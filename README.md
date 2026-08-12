@@ -2,7 +2,7 @@
 
 Phoenix LiveView practice app for Mihrimah and Mustafa as they move from Turkiye to Germany.
 
-It includes German, English, and Maths daily practice, instant explanations for wrong answers, saved quiz results in SQLite, and a retry playground for missed questions.
+It includes German, English, and Maths daily practice, instant explanations for wrong answers, saved quiz results in SQLite, and a retry playground for missed questions. Admins can also review an in-app performance dashboard with progress bars, trends, weak skills, and the current adaptive level per child and subject.
 
 ## Install Elixir/Erlang with Ansible
 
@@ -215,6 +215,7 @@ CI gates:
 ## Notes
 
 - Questions change daily because they are generated from the child, subject, and date.
+- Local generated questions use a simple adaptive level: after at least two strong recent results in a subject, the next generated set moves one level up for that child and subject. Notion-provided modules remain the source of truth when they exist and pass validation.
 - Results are saved in `kids_prep_dev.db`.
 - SQLite is fine for Mustafa and Mihrimah using the app in parallel on one local machine. The app uses WAL mode and a busy timeout so reads and short result writes can coexist comfortably.
 - Each subject has enough questions for a focused 45-minute practice block, especially when children read explanations and retry missed questions.

@@ -6,6 +6,7 @@
   <div class="top-actions">
     <span class="user-pill">{@current_user["display_name"]}</span>
     <%= if @current_user["role"] == "admin" do %>
+      <button class="notion-link" phx-click="dashboard">Leistung</button>
       <button class="notion-link" phx-click="refresh_cache">Fragen aktualisieren</button>
       <a class="notion-link" href={~p"/auth/notion"}>Notion verbinden</a>
     <% end %>
@@ -51,6 +52,69 @@
             <span>{Learning.subject_label(result.subject)}</span>
             <span>{result.score}/{result.total}</span>
             <span>{percent(result.score, result.total)}%</span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<%= if @mode == :dashboard and @dashboard do %>
+  <section class="intro compact">
+    <div>
+      <p class="eyebrow">Admin · SQLite-Auswertung</p>
+      <h1>Leistung</h1>
+      <p class="lead">
+        Fortschritt, aktuelle Lernstufe und Übungsschwerpunkte aus den gespeicherten Ergebnissen.
+      </p>
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <%= for child <- @dashboard.children do %>
+      <article class="dashboard-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">{child.name}</p>
+            <h2>{child.average}% Durchschnitt</h2>
+          </div>
+          <strong>{child.attempts} Übungen</strong>
+        </div>
+
+        <div class="subject-stats">
+          <%= for stat <- child.subjects do %>
+            <div class={"stat-row #{stat.subject}"}>
+              <div class="stat-meta">
+                <strong>{stat.label}</strong>
+                <span>Stufe {stat.level} · {stat.attempts} Übungen · zuletzt {stat.latest}%</span>
+              </div>
+              <div class="bar">
+                <span style={chart_width(stat.average)}></span>
+              </div>
+              <div class="sparkline" aria-label={"Trend #{stat.label}"}>
+                <%= for value <- stat.trend do %>
+                  <span style={"height: #{max(value, 8)}%"} title={"#{value}%"}></span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </article>
+    <% end %>
+  </section>
+
+  <section class="history">
+    <h2>Schwerpunkte zum Wiederholen</h2>
+    <%= if @dashboard.weak_skills == [] do %>
+      <p>Noch keine Schwachstellen gespeichert.</p>
+    <% else %>
+      <div class="weak-list">
+        <%= for item <- @dashboard.weak_skills do %>
+          <div class="weak-row">
+            <strong>{item.child}</strong>
+            <span>{item.label}</span>
+            <span>{item.skill}</span>
+            <em>{item.count} Fehler</em>
           </div>
         <% end %>
       </div>

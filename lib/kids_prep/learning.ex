@@ -11,9 +11,11 @@ defmodule KidsPrep.Learning do
   defdelegate notion_subject_label(subject), to: Material
   defdelegate subject_from_label(label), to: Material
 
-  defdelegate daily_generated_questions(child_slug, subject, date \\ Date.utc_today()),
-    to: Material,
-    as: :daily_questions
+  def daily_generated_questions(child_slug, subject, date \\ Date.utc_today()) do
+    Material.daily_questions(child_slug, subject, date,
+      level: adaptive_level(child_slug, subject)
+    )
+  end
 
   def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
     cached_daily_questions(child_slug, subject, date) ||
@@ -61,6 +63,107 @@ defmodule KidsPrep.Learning do
     |> limit(^limit)
     |> Repo.all()
   end
+
+  def performance_dashboard do
+    results =
+      Result
+      |> order_by([r], asc: r.quiz_date, asc: r.inserted_at)
+      |> Repo.all()
+
+    %{
+      children: dashboard_children(results),
+      weak_skills: weak_skill_summary(results)
+    }
+  end
+
+  def adaptive_level(child_slug, subject) do
+    base_level = if child_slug == "mustafa", do: 2, else: 1
+
+    recent =
+      Result
+      |> where([r], r.child_slug == ^child_slug and r.subject == ^subject)
+      |> order_by([r], desc: r.quiz_date, desc: r.inserted_at)
+      |> limit(3)
+      |> Repo.all()
+
+    if length(recent) >= 2 and average_percent(recent) >= 85 do
+      min(base_level + 1, 3)
+    else
+      base_level
+    end
+  end
+
+  defp dashboard_children(results) do
+    children()
+    |> Enum.map(fn {child_slug, child} ->
+      child_results = Enum.filter(results, &(&1.child_slug == child_slug))
+
+      subjects =
+        subjects()
+        |> Enum.map(fn subject ->
+          subject_results = Enum.filter(child_results, &(&1.subject == subject))
+          recent = subject_results |> Enum.reverse() |> Enum.take(5) |> Enum.reverse()
+
+          %{
+            subject: subject,
+            label: subject_label(subject),
+            attempts: length(subject_results),
+            average: average_percent(subject_results),
+            latest: subject_results |> List.last() |> result_percent(),
+            level: adaptive_level(child_slug, subject),
+            trend: Enum.map(recent, &result_percent/1)
+          }
+        end)
+
+      %{
+        slug: child_slug,
+        name: child.name,
+        attempts: length(child_results),
+        average: average_percent(child_results),
+        subjects: subjects
+      }
+    end)
+  end
+
+  defp weak_skill_summary(results) do
+    results
+    |> Enum.flat_map(fn result ->
+      result.wrong_questions
+      |> Map.get("items", [])
+      |> Enum.map(fn item ->
+        %{
+          child: result.child_name,
+          subject: result.subject,
+          skill: item["skill"] || "Unbekannt"
+        }
+      end)
+    end)
+    |> Enum.group_by(&{&1.child, &1.subject, &1.skill})
+    |> Enum.map(fn {{child, subject, skill}, items} ->
+      %{
+        child: child,
+        subject: subject,
+        label: subject_label(subject),
+        skill: skill,
+        count: length(items)
+      }
+    end)
+    |> Enum.sort_by(& &1.count, :desc)
+    |> Enum.take(8)
+  end
+
+  defp average_percent([]), do: 0
+
+  defp average_percent(results) do
+    results
+    |> Enum.map(&result_percent/1)
+    |> then(&(Enum.sum(&1) / length(&1)))
+    |> round()
+  end
+
+  defp result_percent(nil), do: 0
+  defp result_percent(%{total: total}) when total in [nil, 0], do: 0
+  defp result_percent(%{score: score, total: total}), do: round(score / total * 100)
 
   defp cached_daily_questions(child_slug, subject, date) do
     DailyQuestionCache
