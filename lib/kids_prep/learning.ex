@@ -17,8 +17,15 @@ defmodule KidsPrep.Learning do
 
   def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
     case KidsPrep.Notion.Sync.fetch_daily_questions(child_slug, subject, date) do
-      {:ok, questions} -> questions
-      _ -> daily_generated_questions(child_slug, subject, date)
+      {:ok, questions} ->
+        if Material.valid_questions_for_subject?(subject, questions) do
+          questions
+        else
+          daily_generated_questions(child_slug, subject, date)
+        end
+
+      _ ->
+        daily_generated_questions(child_slug, subject, date)
     end
   end
 

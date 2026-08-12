@@ -44,6 +44,19 @@ defmodule KidsPrep.Learning.Material do
 
   def child!(slug), do: Map.fetch!(@children, slug)
 
+  def valid_questions_for_subject?(subject, questions) when is_list(questions) do
+    questions != [] and Enum.all?(questions, &valid_question_for_subject?(subject, &1))
+  end
+
+  def valid_question_for_subject?("english", question) do
+    english_text?(question.prompt) and Enum.all?(question.choices, &english_text?/1) and
+      english_text?(question.answer) and german_explanation?(question.explanation)
+  end
+
+  def valid_question_for_subject?(_subject, question) do
+    german_learning_text?(question.prompt) and german_learning_text?(question.explanation)
+  end
+
   def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
     seed = :erlang.phash2({child_slug, subject, date})
     level = if child_slug == "mustafa", do: 2, else: 1
@@ -155,18 +168,18 @@ defmodule KidsPrep.Learning.Material do
 
   defp build_subject("english", level, seed) do
     vocab = [
-      {"library", "a place with books", "Bibliothek / kütüphane"},
-      {"bridge", "something you cross", "Brücke / köprü"},
-      {"quickly", "in a fast way", "schnell / hızlıca"},
-      {"friendly", "kind and nice", "freundlich / arkadaşça"},
-      {"journey", "a trip", "Reise / yolculuk"},
-      {"answer", "a reply", "Antwort / cevap"},
-      {"before", "earlier than", "vorher / önce"},
-      {"because", "for the reason that", "weil / çünkü"},
-      {"between", "in the middle of two things", "zwischen / arasında"},
-      {"careful", "doing something with attention", "vorsichtig / dikkatli"},
-      {"mistake", "something to learn from", "Fehler / hata"},
-      {"practice", "repeating to get better", "Übung / alıştırma"}
+      {"library", "a place with books", "Bibliothek"},
+      {"bridge", "something you cross", "Brücke"},
+      {"quickly", "in a fast way", "schnell"},
+      {"friendly", "kind and nice", "freundlich"},
+      {"journey", "a trip", "Reise"},
+      {"answer", "a reply", "Antwort"},
+      {"before", "earlier than", "vorher"},
+      {"because", "for the reason that", "weil"},
+      {"between", "in the middle of two things", "zwischen"},
+      {"careful", "doing something with attention", "vorsichtig"},
+      {"mistake", "something to learn from", "Fehler"},
+      {"practice", "repeating to get better", "Übung"}
     ]
 
     grammar = [
@@ -211,7 +224,7 @@ defmodule KidsPrep.Learning.Material do
           "What does '#{word}' mean?",
           choices,
           meaning,
-          "Deutsch: '#{word}' bedeutet #{explanation_hint}. Lies das ganze Wort und stelle dir ein Bild dazu vor.\nTürkçe: '#{word}' kelimesinin anlamı #{explanation_hint}. Kelimeyi tamamen oku ve kafanda bir resim kur."
+          "Deutsch: '#{word}' bedeutet #{explanation_hint}. Lies das ganze Wort und stelle dir ein Bild dazu vor."
         )
       end)
 
@@ -227,7 +240,7 @@ defmodule KidsPrep.Learning.Material do
           prompt,
           choices,
           answer,
-          "Deutsch: Schau auf die Person und auf die Zeit im Satz. Kleine Wörter und Endungen zeigen die Grammatik.\nTürkçe: Cümledeki kişiye ve zamana bak. Küçük kelimeler ve ekler grameri gösterir."
+          "Deutsch: Schau auf die Person und auf die Zeit im Satz. Kleine Wörter und Endungen zeigen die Grammatik."
         )
       end)
 
@@ -243,7 +256,7 @@ defmodule KidsPrep.Learning.Material do
           "#{text}\n\n#{prompt}",
           [answer, "breakfast", "the new teacher"],
           answer,
-          "Deutsch: Die Antwort steht im englischen Text. Lies den Satz noch einmal und suche die Wörter, die es beweisen.\nTürkçe: Cevap İngilizce metnin içinde. Cümleyi tekrar oku ve cevabı gösteren kelimeleri bul."
+          "Deutsch: Die Antwort steht im englischen Text. Lies den Satz noch einmal und suche die Wörter, die es beweisen."
         )
       end)
 
@@ -261,7 +274,7 @@ defmodule KidsPrep.Learning.Material do
 
         q(
           "maths",
-          "Addition",
+          "Plusrechnen",
           level,
           "#{a} + #{b} = ?",
           number_choices(answer, seed + n),
@@ -352,5 +365,78 @@ defmodule KidsPrep.Learning.Material do
   defp rotate(list, seed) do
     {left, right} = Enum.split(list, rem(seed, length(list)))
     right ++ left
+  end
+
+  defp english_text?(value) do
+    text = to_string(value)
+
+    String.match?(text, ~r/[A-Za-z]/) and not turkish_text?(text) and
+      not german_instruction?(text)
+  end
+
+  defp german_explanation?(value) do
+    text = to_string(value)
+    german_learning_text?(text) and not turkish_text?(text)
+  end
+
+  defp german_learning_text?(value) do
+    text = to_string(value)
+    not english_instruction?(text) and not turkish_text?(text)
+  end
+
+  defp english_instruction?(value) do
+    value
+    |> to_string()
+    |> String.downcase()
+    |> then(&String.contains?(&1, english_instruction_markers()))
+  end
+
+  defp german_instruction?(value) do
+    value
+    |> to_string()
+    |> String.downcase()
+    |> then(&String.contains?(&1, german_instruction_markers()))
+  end
+
+  defp turkish_text?(value) do
+    String.contains?(to_string(value), ["Türkçe:", "ı", "İ", "ğ", "Ğ", "ş", "Ş"])
+  end
+
+  defp english_instruction_markers do
+    [
+      "which article",
+      "choose the",
+      "build the",
+      "what does",
+      "why did",
+      "what did",
+      "what helped",
+      "the answer is",
+      "go back",
+      "look at",
+      "check the",
+      "add tens",
+      "break the",
+      "multiplication is",
+      "there are",
+      "how many",
+      "left means"
+    ]
+  end
+
+  defp german_instruction_markers do
+    [
+      "welcher",
+      "wähle",
+      "baue",
+      "was bedeutet",
+      "warum",
+      "was teilten",
+      "was half",
+      "schau",
+      "lies",
+      "deutsch:",
+      "türkçe:"
+    ]
   end
 end

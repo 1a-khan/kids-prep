@@ -1,6 +1,7 @@
 defmodule KidsPrep.Learning.MaterialTest do
   use ExUnit.Case, async: true
 
+  alias KidsPrep.Learning.Question
   alias KidsPrep.Learning.Material
 
   test "daily material exists for both children and every subject" do
@@ -23,7 +24,7 @@ defmodule KidsPrep.Learning.MaterialTest do
     end
   end
 
-  test "english subject keeps questions and answers in English with German and Turkish explanations" do
+  test "english subject keeps questions and answers in English with German explanations" do
     questions = Material.daily_questions("mustafa", "english", ~D[2026-08-12])
 
     vocabulary = Enum.find(questions, &(&1.skill == "Vocabulary"))
@@ -32,11 +33,49 @@ defmodule KidsPrep.Learning.MaterialTest do
     assert vocabulary.prompt =~ "What does"
     assert "a kind of food" in vocabulary.choices
     assert vocabulary.explanation =~ "Deutsch:"
-    assert vocabulary.explanation =~ "Türkçe:"
+    refute vocabulary.explanation =~ "Türkçe:"
 
     assert reading.prompt =~ "What"
     assert reading.explanation =~ "Deutsch:"
-    assert reading.explanation =~ "Türkçe:"
+    refute reading.explanation =~ "Türkçe:"
+  end
+
+  test "german and maths subjects keep questions and explanations in German" do
+    german = Material.daily_questions("mihrimah", "german", ~D[2026-08-12])
+    maths = Material.daily_questions("mihrimah", "maths", ~D[2026-08-12])
+
+    assert Enum.all?(german, &Material.valid_question_for_subject?("german", &1))
+    assert Enum.all?(maths, &Material.valid_question_for_subject?("maths", &1))
+
+    refute Enum.any?(german ++ maths, &String.contains?(&1.explanation, "The answer is"))
+    refute Enum.any?(german ++ maths, &String.contains?(&1.prompt, "Choose the"))
+  end
+
+  test "language validation rejects wrong Notion material" do
+    english_with_german_prompt = %Question{
+      id: "bad-english",
+      subject: "english",
+      skill: "Vocabulary",
+      level: 1,
+      prompt: "Was bedeutet das englische Wort 'library'?",
+      choices: ["ein Ort mit Büchern", "Essen"],
+      answer: "ein Ort mit Büchern",
+      explanation: "Deutsch: Erklärung."
+    }
+
+    maths_with_english_explanation = %Question{
+      id: "bad-maths",
+      subject: "maths",
+      skill: "Plusrechnen",
+      level: 1,
+      prompt: "7 + 5 = ?",
+      choices: [12, 13],
+      answer: 12,
+      explanation: "Add tens first, then ones."
+    }
+
+    assert not Material.valid_question_for_subject?("english", english_with_german_prompt)
+    assert not Material.valid_question_for_subject?("maths", maths_with_english_explanation)
   end
 
   test "display labels are German while Notion labels remain compatible with existing databases" do
