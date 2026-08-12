@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
 
 ARG ELIXIR_VERSION=1.18.3
-ARG OTP_VERSION=27.2.2
-ARG DEBIAN_VERSION=bookworm-20250113-slim
+ARG OTP_VERSION=27.3.4.3
+ARG BUILD_DEBIAN_VERSION=bookworm-20250929-slim
+ARG RUNTIME_DEBIAN_VERSION=bookworm-slim
 
-FROM hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION} AS build
+FROM hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${BUILD_DEBIAN_VERSION} AS build
 
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends build-essential git ca-certificates \
@@ -30,7 +31,7 @@ COPY rel rel
 RUN mix compile
 RUN mix release
 
-FROM debian:${DEBIAN_VERSION} AS runtime
+FROM debian:${RUNTIME_DEBIAN_VERSION} AS runtime
 
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends ca-certificates libstdc++6 openssl libncurses6 sqlite3 \
