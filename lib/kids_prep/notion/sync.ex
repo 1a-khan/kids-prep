@@ -71,7 +71,7 @@ defmodule KidsPrep.Notion.Sync do
 
   defp create_module_page(child_slug, subject, date, module_key, questions) do
     child = Learning.child!(child_slug)
-    subject_label = Learning.subject_label(subject)
+    subject_label = Learning.notion_subject_label(subject)
     keys = Enum.map(questions, & &1.id)
 
     properties = %{
@@ -104,7 +104,7 @@ defmodule KidsPrep.Notion.Sync do
     Client.query_database(Client.database_id(:questions_database_id), %{
       filter: %{
         and: [
-          %{property: "Subject", select: %{equals: Learning.subject_label(subject)}},
+          %{property: "Subject", select: %{equals: Learning.notion_subject_label(subject)}},
           %{
             or: [
               %{property: "Child", select: %{equals: child.name}},
@@ -145,7 +145,10 @@ defmodule KidsPrep.Notion.Sync do
     %Question{
       id: properties |> Map.fetch!("Question Key") |> Properties.plain_text(),
       subject:
-        properties |> Map.fetch!("Subject") |> Properties.select_name() |> String.downcase(),
+        properties
+        |> Map.fetch!("Subject")
+        |> Properties.select_name()
+        |> Learning.subject_from_label(),
       prompt: properties |> Map.fetch!("Prompt") |> Properties.plain_text(),
       choices: choices,
       answer: properties |> Map.fetch!("Correct Answer") |> Properties.plain_text(),
@@ -166,7 +169,7 @@ defmodule KidsPrep.Notion.Sync do
         ),
       "Question Key" => Properties.text(question.id),
       "Child" => Properties.select(child.name),
-      "Subject" => Properties.select(Learning.subject_label(question.subject)),
+      "Subject" => Properties.select(Learning.notion_subject_label(question.subject)),
       "Level" => Properties.number(question.level),
       "Skill" => Properties.text(question.skill),
       "Prompt" => Properties.text(question.prompt),
@@ -194,7 +197,7 @@ defmodule KidsPrep.Notion.Sync do
         ),
       "Result Key" => Properties.text(result_key),
       "Child" => Properties.select(result.child_name),
-      "Subject" => Properties.select(Learning.subject_label(result.subject)),
+      "Subject" => Properties.select(Learning.notion_subject_label(result.subject)),
       "Module Date" => Properties.date(result.quiz_date),
       "Score" => Properties.number(result.score),
       "Total" => Properties.number(result.total),
@@ -221,7 +224,7 @@ defmodule KidsPrep.Notion.Sync do
           ),
         "Weak Skill Key" => Properties.text("#{result.child_slug}-#{result.subject}-#{skill}"),
         "Child" => Properties.select(result.child_name),
-        "Subject" => Properties.select(Learning.subject_label(result.subject)),
+        "Subject" => Properties.select(Learning.notion_subject_label(result.subject)),
         "Skill" => Properties.text(skill),
         "Mistake Count" => Properties.number(length(items)),
         "Priority" => Properties.number(min(length(items) * 2, 10)),

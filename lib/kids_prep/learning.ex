@@ -8,6 +8,8 @@ defmodule KidsPrep.Learning do
   defdelegate child!(slug), to: Material
   defdelegate subjects, to: Material
   defdelegate subject_label(subject), to: Material
+  defdelegate notion_subject_label(subject), to: Material
+  defdelegate subject_from_label(label), to: Material
 
   defdelegate daily_generated_questions(child_slug, subject, date \\ Date.utc_today()),
     to: Material,

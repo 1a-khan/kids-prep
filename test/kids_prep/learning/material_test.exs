@@ -22,4 +22,27 @@ defmodule KidsPrep.Learning.MaterialTest do
              )
     end
   end
+
+  test "english subject keeps questions and answers in English with German and Turkish explanations" do
+    questions = Material.daily_questions("mustafa", "english", ~D[2026-08-12])
+
+    vocabulary = Enum.find(questions, &(&1.skill == "Vocabulary"))
+    reading = Enum.find(questions, &(&1.skill == "Reading"))
+
+    assert vocabulary.prompt =~ "What does"
+    assert "a kind of food" in vocabulary.choices
+    assert vocabulary.explanation =~ "Deutsch:"
+    assert vocabulary.explanation =~ "Türkçe:"
+
+    assert reading.prompt =~ "What"
+    assert reading.explanation =~ "Deutsch:"
+    assert reading.explanation =~ "Türkçe:"
+  end
+
+  test "display labels are German while Notion labels remain compatible with existing databases" do
+    assert Material.subject_label("english") == "Englisch"
+    assert Material.notion_subject_label("english") == "English"
+    assert Material.subject_from_label("Englisch") == "english"
+    assert Material.subject_from_label("English") == "english"
+  end
 end

@@ -25,6 +25,23 @@ defmodule KidsPrep.Learning.Material do
   def subject_label("english"), do: "Englisch"
   def subject_label("maths"), do: "Mathe"
 
+  def notion_subject_label("german"), do: "German"
+  def notion_subject_label("english"), do: "English"
+  def notion_subject_label("maths"), do: "Maths"
+
+  def subject_from_label(label) do
+    case String.downcase(to_string(label)) do
+      "german" -> "german"
+      "deutsch" -> "german"
+      "english" -> "english"
+      "englisch" -> "english"
+      "maths" -> "maths"
+      "math" -> "maths"
+      "mathe" -> "maths"
+      other -> other
+    end
+  end
+
   def child!(slug), do: Map.fetch!(@children, slug)
 
   def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
@@ -138,18 +155,18 @@ defmodule KidsPrep.Learning.Material do
 
   defp build_subject("english", level, seed) do
     vocab = [
-      {"library", "ein Ort mit vielen Büchern"},
-      {"bridge", "etwas, worüber man geht oder fährt"},
-      {"quickly", "schnell"},
-      {"friendly", "freundlich und nett"},
-      {"journey", "eine Reise"},
-      {"answer", "eine Antwort"},
-      {"before", "vorher"},
-      {"because", "weil"},
-      {"between", "zwischen zwei Dingen"},
-      {"careful", "vorsichtig und aufmerksam"},
-      {"mistake", "ein Fehler, aus dem man lernen kann"},
-      {"practice", "üben, um besser zu werden"}
+      {"library", "a place with books", "Bibliothek / kütüphane"},
+      {"bridge", "something you cross", "Brücke / köprü"},
+      {"quickly", "in a fast way", "schnell / hızlıca"},
+      {"friendly", "kind and nice", "freundlich / arkadaşça"},
+      {"journey", "a trip", "Reise / yolculuk"},
+      {"answer", "a reply", "Antwort / cevap"},
+      {"before", "earlier than", "vorher / önce"},
+      {"because", "for the reason that", "weil / çünkü"},
+      {"between", "in the middle of two things", "zwischen / arasında"},
+      {"careful", "doing something with attention", "vorsichtig / dikkatli"},
+      {"mistake", "something to learn from", "Fehler / hata"},
+      {"practice", "repeating to get better", "Übung / alıştırma"}
     ]
 
     grammar = [
@@ -167,14 +184,14 @@ defmodule KidsPrep.Learning.Material do
 
     reading = [
       {"Lena packed her bag before breakfast because the bus arrived early.",
-       "Warum packte Lena ihre Tasche vor dem Frühstück?", "because the bus arrived early"},
-      {"The children shared pencils when one box was empty.", "Was teilten die Kinder?",
+       "Why did Lena pack before breakfast?", "because the bus arrived early"},
+      {"The children shared pencils when one box was empty.", "What did the children share?",
        "pencils"},
-      {"A small map helped the family find the new school.", "Was half der Familie?",
+      {"A small map helped the family find the new school.", "What helped the family?",
        "a small map"},
       {"After the lesson, Mustafa checked his answer and fixed one mistake.",
-       "Was korrigierte Mustafa?", "one mistake"},
-      {"Mihrimah read the question twice before choosing.", "Was las Mihrimah zweimal?",
+       "What did Mustafa fix?", "one mistake"},
+      {"Mihrimah read the question twice before choosing.", "What did Mihrimah read twice?",
        "the question"}
     ]
 
@@ -182,19 +199,19 @@ defmodule KidsPrep.Learning.Material do
       vocab
       |> rotate(seed)
       |> Enum.take(10)
-      |> Enum.map(fn {word, meaning} ->
+      |> Enum.map(fn {word, meaning, explanation_hint} ->
         choices =
-          [meaning, "eine Sorte Essen", "eine Rechenaufgabe"]
+          [meaning, "a kind of food", "a number sentence"]
           |> rotate(seed + byte_size(word))
 
         q(
           "english",
-          "Wortschatz",
+          "Vocabulary",
           level,
-          "Was bedeutet das englische Wort '#{word}'?",
+          "What does '#{word}' mean?",
           choices,
           meaning,
-          "Lies das ganze Wort und stelle dir ein Bild dazu vor. '#{word}' bedeutet: #{meaning}."
+          "Deutsch: '#{word}' bedeutet #{explanation_hint}. Lies das ganze Wort und stelle dir ein Bild dazu vor.\nTürkçe: '#{word}' kelimesinin anlamı #{explanation_hint}. Kelimeyi tamamen oku ve kafanda bir resim kur."
         )
       end)
 
@@ -205,12 +222,12 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.map(fn {prompt, answer, choices} ->
         q(
           "english",
-          "Grammatik",
+          "Grammar",
           level,
           prompt,
           choices,
           answer,
-          "Schau auf die Person und auf die Zeit im Satz. Kleine Wörter und Endungen zeigen die Grammatik."
+          "Deutsch: Schau auf die Person und auf die Zeit im Satz. Kleine Wörter und Endungen zeigen die Grammatik.\nTürkçe: Cümledeki kişiye ve zamana bak. Küçük kelimeler ve ekler grameri gösterir."
         )
       end)
 
@@ -221,12 +238,12 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.map(fn {text, prompt, answer} ->
         q(
           "english",
-          "Lesen",
+          "Reading",
           level,
           "#{text}\n\n#{prompt}",
           [answer, "breakfast", "the new teacher"],
           answer,
-          "Die Antwort steht im Text. Lies den Satz noch einmal und suche die Wörter, die es beweisen."
+          "Deutsch: Die Antwort steht im englischen Text. Lies den Satz noch einmal und suche die Wörter, die es beweisen.\nTürkçe: Cevap İngilizce metnin içinde. Cümleyi tekrar oku ve cevabı gösteren kelimeleri bul."
         )
       end)
 
