@@ -3,13 +3,7 @@ import Config
 config :kids_prep,
   ecto_repos: [KidsPrep.Repo],
   generators: [timestamp_type: :utc_datetime],
-  notion: [
-    hub_page_id: "3bab677e-d9b4-817c-ab8c-f67b40ae961e",
-    questions_database_id: "814ae504b1a4479a9bbf038801e703e7",
-    daily_modules_database_id: "956aa51d67744967be5e6d0e43e2cbed",
-    results_database_id: "54ec1e84f6af4dfeb19f334ddf45cc0d",
-    weak_skills_database_id: "4371e03fafcc4f87bc49a432a4573817"
-  ]
+  notion: []
 
 config :kids_prep, KidsPrep.Repo,
   database: Path.expand("../kids_prep_dev.db", Path.dirname(__ENV__.file)),

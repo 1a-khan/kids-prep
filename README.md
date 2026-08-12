@@ -33,13 +33,22 @@ The app requires login before the practice screen opens.
 
 Current accounts:
 
-| User | Password | Access |
+| User | OpenBao key | Access |
 | --- | --- | --- |
-| `mihrimah` | `KIDS_PREP_MIHRIMAH_PASSWORD` | Mihrimah's own subjects and results |
-| `mustafa` | `KIDS_PREP_MUSTAFA_PASSWORD` | Mustafa's own subjects and results |
-| `admin` | `KIDS_PREP_ADMIN_PASSWORD` | Both children, recent results, and Notion connect |
+| `mihrimah` | `mihrimah_password` | Mihrimah's own subjects and results |
+| `mustafa` | `mustafa_password` | Mustafa's own subjects and results |
+| `admin` | `admin_password` | Both children, recent results, and Notion connect |
 
-Set those values through your shell for local development, and through Coolify/OpenBao for production. Do not commit real passwords to GitHub.
+Store production passwords in OpenBao:
+
+```bash
+bao kv put secret/coolify/kids-prep/login/users \
+  mihrimah_password="your_mihrimah_password" \
+  mustafa_password="your_mustafa_password" \
+  admin_password="your_admin_password"
+```
+
+Local development can still use the `KIDS_PREP_*_PASSWORD` env vars from `.env.example` as a fallback. Do not commit real passwords to GitHub.
 
 ## Generate local daily material
 
@@ -52,13 +61,18 @@ Generated JSON files are written to `priv/generated_material/YYYY-MM-DD/`.
 
 ## Notion sync
 
-I created a Notion hub page and four databases in the workspace `Notion von Ammad Khan`:
+I created a Notion hub page and four databases in the workspace `Notion von Ammad Khan`.
 
-- Hub: `https://app.notion.com/p/3bab677ed9b4817cab8cf67b40ae961e`
-- Questions database: `814ae504b1a4479a9bbf038801e703e7`
-- Daily Modules database: `956aa51d67744967be5e6d0e43e2cbed`
-- Results database: `54ec1e84f6af4dfeb19f334ddf45cc0d`
-- Weak Skills database: `4371e03fafcc4f87bc49a432a4573817`
+Runtime Notion IDs are loaded from OpenBao, not Coolify env:
+
+```bash
+bao kv put secret/coolify/kids-prep/notion/config \
+  hub_page_id="your_hub_page_id" \
+  questions_database_id="your_questions_database_id" \
+  daily_modules_database_id="your_daily_modules_database_id" \
+  results_database_id="your_results_database_id" \
+  weak_skills_database_id="your_weak_skills_database_id"
+```
 
 The preferred setup is Notion OAuth with OpenBao. The app reads OAuth credentials from OpenBao, sends you to Notion for consent, and stores the resulting Notion token response back in OpenBao.
 
@@ -92,6 +106,27 @@ mix phx.server
 `NOTION_TOKEN` still works as a direct override, but OpenBao is preferred so the Notion secret is not stored in local project files.
 
 The app also accepts Vault/OpenBao CLI-style names: `BAO_ADDR`, `BAO_TOKEN`, `VAULT_ADDR`, and `VAULT_TOKEN`.
+
+For Coolify, keep env vars limited to bootstrap/runtime necessities:
+
+- `PHX_HOST`
+- `PORT`
+- `DATABASE_PATH`
+- `SECRET_KEY_BASE`
+- `OPENBAO_ADDR`
+- `OPENBAO_TOKEN` or a stronger machine-auth bootstrap method
+- `OPENBAO_KV_MOUNT`
+- `OPENBAO_APP_SECRET_PATH`
+
+All app-level Notion config should be under:
+
+```text
+secret/coolify/kids-prep/notion/config
+secret/coolify/kids-prep/notion/oauth
+secret/coolify/kids-prep/notion/tokens
+```
+
+OpenBao tokens can expire. Do not use your personal/root token in Coolify. For production, prefer AppRole, JWT/OIDC auth, or a short-lived renewable token scoped only to `secret/data/coolify/kids-prep/*`.
 
 Connect OAuth locally:
 

@@ -1,20 +1,5 @@
 import Config
 
-notion_env = [
-  hub_page_id: System.get_env("KIDS_PREP_NOTION_HUB_PAGE_ID"),
-  questions_database_id: System.get_env("KIDS_PREP_NOTION_QUESTIONS_DATABASE_ID"),
-  daily_modules_database_id: System.get_env("KIDS_PREP_NOTION_DAILY_MODULES_DATABASE_ID"),
-  results_database_id: System.get_env("KIDS_PREP_NOTION_RESULTS_DATABASE_ID"),
-  weak_skills_database_id: System.get_env("KIDS_PREP_NOTION_WEAK_SKILLS_DATABASE_ID")
-]
-
-configured_notion =
-  :kids_prep
-  |> Application.get_env(:notion, [])
-  |> Keyword.merge(Enum.reject(notion_env, fn {_key, value} -> value in [nil, ""] end))
-
-config :kids_prep, notion: configured_notion
-
 if config_env() == :prod do
   phx_host = System.get_env("PHX_HOST") || "kids-prep.miak-it.com"
   port = String.to_integer(System.get_env("PORT") || "4000")

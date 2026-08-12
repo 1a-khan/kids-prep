@@ -9,6 +9,14 @@ defmodule KidsPrep.Secrets.OpenBao do
     read_app_secret("notion/oauth")
   end
 
+  def read_notion_config do
+    read_app_secret("notion/config")
+  end
+
+  def read_login_users do
+    read_app_secret("login/users")
+  end
+
   def read_notion_oauth_tokens do
     read_app_secret("notion/tokens")
   end

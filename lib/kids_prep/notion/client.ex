@@ -6,11 +6,16 @@ defmodule KidsPrep.Notion.Client do
 
   def enabled?, do: token() not in [nil, ""]
 
-  def database_id(key), do: notion_config() |> Keyword.fetch!(key)
+  def database_id(key), do: notion_config()[to_string(key)]
 
-  def query_database(database_id, body \\ %{}) do
+  def query_database(database_id, body \\ %{})
+  def query_database(nil, _body), do: {:error, :missing_database_id}
+
+  def query_database(database_id, body) do
     request(:post, "/databases/#{database_id}/query", json: body)
   end
+
+  def create_page(nil, _properties), do: {:error, :missing_database_id}
 
   def create_page(database_id, properties) do
     request(:post, "/pages", json: %{parent: %{database_id: database_id}, properties: properties})
@@ -53,5 +58,18 @@ defmodule KidsPrep.Notion.Client do
     System.get_env("NOTION_TOKEN") || KidsPrep.Secrets.OpenBao.read_notion_token()
   end
 
-  defp notion_config, do: Application.fetch_env!(:kids_prep, :notion)
+  defp notion_config do
+    app_config =
+      :kids_prep
+      |> Application.get_env(:notion, [])
+      |> Map.new(fn {key, value} -> {to_string(key), value} end)
+
+    case KidsPrep.Secrets.OpenBao.read_notion_config() do
+      {:ok, openbao_config} when is_map(openbao_config) ->
+        Map.merge(app_config, openbao_config)
+
+      _ ->
+        app_config
+    end
+  end
 end
