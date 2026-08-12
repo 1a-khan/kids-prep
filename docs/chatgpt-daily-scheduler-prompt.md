@@ -56,6 +56,10 @@ Child differentiation rules:
 - Do not let Mihrimah's weak skills reduce Mustafa's difficulty.
 - If both children need the same skill, create different prompts at different difficulty levels.
 - Question Key must include the child slug so question reuse is explicit and traceable.
+- For daily generated material, do not use `Child = Both` in the Questions database.
+- Use `Child = Mihrimah` only for Mihrimah questions.
+- Use `Child = Mustafa` only for Mustafa questions.
+- `Child = Both` is reserved only for manually curated universal warm-up questions, not for the weekday scheduler.
 
 Subjects:
 - German
@@ -112,9 +116,13 @@ Notion writes:
    YYYY-MM-DD-child_slug-subject
    Example: 2026-08-12-mihrimah-german
 4. Use unique Question Keys that include date, child slug, subject, skill, and sequence.
-5. Mark questions Active.
-6. Store the ordered Question Keys JSON in the Daily Modules row.
-7. Do not create duplicate rows for an existing complete module.
+5. For Mihrimah question rows, set `Child` to `Mihrimah`; never set `Child` to `Both`.
+6. For Mustafa question rows, set `Child` to `Mustafa`; never set `Child` to `Both`.
+7. Set `Level` from the child-specific adaptive level.
+8. Mark questions Active.
+9. Store only that child's ordered Question Keys JSON in the matching Daily Modules row.
+10. Do not mix Mihrimah question keys into Mustafa modules, or Mustafa question keys into Mihrimah modules.
+11. Do not create duplicate rows for an existing complete module.
 
 Required quality checks before finishing:
 - Mihrimah and Mustafa have separate modules and different age-appropriate question sets.
@@ -127,6 +135,9 @@ Required quality checks before finishing:
 - No Turkish learner-facing text.
 - No overly long explanations.
 - No duplicate Question Keys.
+- No daily scheduler question row uses `Child = Both`.
+- Mihrimah Daily Modules reference only question keys containing `mihrimah`.
+- Mustafa Daily Modules reference only question keys containing `mustafa`.
 - Daily Modules have the correct Module Key, date, child, subject, question count, and Question Keys JSON.
 
 At the end:
