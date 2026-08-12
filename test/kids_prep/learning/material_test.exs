@@ -78,6 +78,36 @@ defmodule KidsPrep.Learning.MaterialTest do
     assert not Material.valid_question_for_subject?("maths", maths_with_english_explanation)
   end
 
+  test "language validation rejects German subject with English answers" do
+    german_with_english_answer = %Question{
+      id: "bad-german-answer",
+      subject: "german",
+      skill: "Artikel",
+      level: 1,
+      prompt: "Welcher Artikel passt zu 'Lampe'?",
+      choices: ["the", "a", "an"],
+      answer: "the",
+      explanation: "Jedes deutsche Nomen hat einen Artikel."
+    }
+
+    assert not Material.valid_question_for_subject?("german", german_with_english_answer)
+  end
+
+  test "language validation rejects English subject with German answers" do
+    english_with_german_answer = %Question{
+      id: "bad-english-answer",
+      subject: "english",
+      skill: "Vocabulary",
+      level: 1,
+      prompt: "What does 'dog' mean?",
+      choices: ["ein Hund", "a place with books", "a number sentence"],
+      answer: "ein Hund",
+      explanation: "Deutsch: Die Antwort steht im englischen Wort."
+    }
+
+    assert not Material.valid_question_for_subject?("english", english_with_german_answer)
+  end
+
   test "display labels are German while Notion labels remain compatible with existing databases" do
     assert Material.subject_label("english") == "Englisch"
     assert Material.notion_subject_label("english") == "English"

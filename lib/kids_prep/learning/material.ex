@@ -54,7 +54,10 @@ defmodule KidsPrep.Learning.Material do
   end
 
   def valid_question_for_subject?(_subject, question) do
-    german_learning_text?(question.prompt) and german_learning_text?(question.explanation)
+    german_learning_text?(question.prompt) and
+      Enum.all?(question.choices, &german_learning_text?/1) and
+      german_learning_text?(question.answer) and
+      german_learning_text?(question.explanation)
   end
 
   def daily_questions(child_slug, subject, date \\ Date.utc_today()) do
@@ -371,7 +374,7 @@ defmodule KidsPrep.Learning.Material do
     text = to_string(value)
 
     String.match?(text, ~r/[A-Za-z]/) and not turkish_text?(text) and
-      not german_instruction?(text)
+      not german_learning_text_marker?(text)
   end
 
   defp german_explanation?(value) do
@@ -381,28 +384,33 @@ defmodule KidsPrep.Learning.Material do
 
   defp german_learning_text?(value) do
     text = to_string(value)
-    not english_instruction?(text) and not turkish_text?(text)
+    not english_learning_text_marker?(text) and not turkish_text?(text)
   end
 
-  defp english_instruction?(value) do
-    value
-    |> to_string()
-    |> String.downcase()
-    |> then(&String.contains?(&1, english_instruction_markers()))
+  defp english_learning_text_marker?(value) do
+    text = value |> to_string() |> String.downcase()
+
+    String.contains?(text, english_learning_phrases()) or
+      Enum.any?(tokens(text), &(&1 in english_learning_words()))
   end
 
-  defp german_instruction?(value) do
-    value
-    |> to_string()
-    |> String.downcase()
-    |> then(&String.contains?(&1, german_instruction_markers()))
+  defp german_learning_text_marker?(value) do
+    text = value |> to_string() |> String.downcase()
+
+    String.contains?(text, german_learning_phrases()) or
+      Enum.any?(tokens(text), &(&1 in german_learning_words()))
   end
 
   defp turkish_text?(value) do
     String.contains?(to_string(value), ["Türkçe:", "ı", "İ", "ğ", "Ğ", "ş", "Ş"])
   end
 
-  defp english_instruction_markers do
+  defp tokens(text) do
+    Regex.scan(~r/[\p{L}]+/u, text)
+    |> List.flatten()
+  end
+
+  defp english_learning_phrases do
     [
       "which article",
       "choose the",
@@ -424,7 +432,20 @@ defmodule KidsPrep.Learning.Material do
     ]
   end
 
-  defp german_instruction_markers do
+  defp english_learning_words do
+    [
+      "the",
+      "a",
+      "with",
+      "first",
+      "then",
+      "answer",
+      "question",
+      "belongs"
+    ]
+  end
+
+  defp german_learning_phrases do
     [
       "welcher",
       "wähle",
@@ -436,7 +457,29 @@ defmodule KidsPrep.Learning.Material do
       "schau",
       "lies",
       "deutsch:",
-      "türkçe:"
+      " bedeutet",
+      "erklärung"
+    ]
+  end
+
+  defp german_learning_words do
+    [
+      "der",
+      "die",
+      "das",
+      "ein",
+      "eine",
+      "einen",
+      "mit",
+      "und",
+      "oder",
+      "ist",
+      "sind",
+      "hat",
+      "hund",
+      "schule",
+      "buch",
+      "haus"
     ]
   end
 end
