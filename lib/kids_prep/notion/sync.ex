@@ -47,10 +47,15 @@ defmodule KidsPrep.Notion.Sync do
 
   def push_result(result) do
     if enabled?() do
-      result
-      |> result_properties()
-      |> then(&Client.create_page(Client.database_id(:results_database_id), &1))
-      |> tap(fn _ -> push_weak_skills(result) end)
+      result_key = result_key(result)
+      properties = result_properties(result)
+
+      with {:ok, pages} <- find_result(result_key),
+           {:ok, _page} <-
+             upsert_page(pages, Client.database_id(:results_database_id), properties),
+           :ok <- push_weak_skills(result) do
+        {:ok, result_key}
+      end
     else
       {:error, :notion_disabled}
     end
@@ -117,6 +122,30 @@ defmodule KidsPrep.Notion.Sync do
       page_size: 100
     })
     |> unpack_results()
+  end
+
+  defp find_result(result_key) do
+    Client.query_database(Client.database_id(:results_database_id), %{
+      filter: %{property: "Result Key", rich_text: %{equals: result_key}},
+      page_size: 1
+    })
+    |> unpack_results()
+  end
+
+  defp find_weak_skill(weak_skill_key) do
+    Client.query_database(Client.database_id(:weak_skills_database_id), %{
+      filter: %{property: "Weak Skill Key", rich_text: %{equals: weak_skill_key}},
+      page_size: 1
+    })
+    |> unpack_results()
+  end
+
+  defp upsert_page([%{"id" => page_id} | _], _database_id, properties) do
+    Client.update_page(page_id, properties)
+  end
+
+  defp upsert_page([], database_id, properties) do
+    Client.create_page(database_id, properties)
   end
 
   defp unpack_results({:ok, %{"results" => results}}), do: {:ok, results}
@@ -188,14 +217,13 @@ defmodule KidsPrep.Notion.Sync do
   defp result_properties(result) do
     percent = if result.total > 0, do: result.score / result.total * 100, else: 0
     wrong_items = get_in(result.wrong_questions || %{}, ["items"]) || []
-    result_key = "result-#{result.id}"
 
     %{
       "Name" =>
         Properties.title(
           "#{result.child_name} #{Learning.subject_label(result.subject)} #{Date.to_iso8601(result.quiz_date)}"
         ),
-      "Result Key" => Properties.text(result_key),
+      "Result Key" => Properties.text(result_key(result)),
       "Child" => Properties.select(result.child_name),
       "Subject" => Properties.select(Learning.notion_subject_label(result.subject)),
       "Module Date" => Properties.date(result.quiz_date),
@@ -215,27 +243,41 @@ defmodule KidsPrep.Notion.Sync do
     wrong_items = get_in(result.wrong_questions || %{}, ["items"]) || []
 
     wrong_items
-    |> Enum.group_by(& &1["skill"])
-    |> Enum.each(fn {skill, items} ->
+    |> Enum.group_by(&(&1["skill"] || "Unbekannt"))
+    |> Enum.reduce_while(:ok, fn {skill, items}, :ok ->
+      weak_skill_key = "#{result.child_slug}-#{result.subject}-#{skill}"
+      mistake_count = Learning.weak_skill_mistake_count(result.child_slug, result.subject, skill)
+
       properties = %{
         "Name" =>
           Properties.title(
             "#{result.child_name} #{Learning.subject_label(result.subject)} #{skill}"
           ),
-        "Weak Skill Key" => Properties.text("#{result.child_slug}-#{result.subject}-#{skill}"),
+        "Weak Skill Key" => Properties.text(weak_skill_key),
         "Child" => Properties.select(result.child_name),
         "Subject" => Properties.select(Learning.notion_subject_label(result.subject)),
         "Skill" => Properties.text(skill),
-        "Mistake Count" => Properties.number(length(items)),
-        "Priority" => Properties.number(min(length(items) * 2, 10)),
+        "Mistake Count" => Properties.number(max(mistake_count, length(items))),
+        "Priority" => Properties.number(min(max(mistake_count, length(items)) * 2, 10)),
         "Last Seen" => Properties.date(result.quiz_date),
         "Status" => Properties.status("In progress"),
         "Notes" => Properties.text("Automatisch aus falschen Antworten erstellt.")
       }
 
-      Client.create_page(Client.database_id(:weak_skills_database_id), properties)
+      case find_weak_skill(weak_skill_key) do
+        {:ok, pages} ->
+          case upsert_page(pages, Client.database_id(:weak_skills_database_id), properties) do
+            {:ok, _page} -> {:cont, :ok}
+            error -> {:halt, error}
+          end
+
+        error ->
+          {:halt, error}
+      end
     end)
   end
+
+  defp result_key(result), do: "result-#{result.id}"
 
   defp module_key(child_slug, subject, date),
     do: "#{Date.to_iso8601(date)}-#{child_slug}-#{subject}"

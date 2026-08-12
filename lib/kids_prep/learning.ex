@@ -1,6 +1,8 @@
 defmodule KidsPrep.Learning do
   import Ecto.Query
 
+  require Logger
+
   alias KidsPrep.Learning.{DailyQuestionCache, Material, Question, Result}
   alias KidsPrep.Repo
 
@@ -52,9 +54,32 @@ defmodule KidsPrep.Learning do
     |> Result.changeset(attrs)
     |> Repo.insert()
     |> tap(fn
-      {:ok, result} -> Task.start(fn -> KidsPrep.Notion.Sync.push_result(result) end)
+      {:ok, result} -> Task.start(fn -> sync_result_to_notion(result) end)
       _ -> :ok
     end)
+  end
+
+  def sync_result_to_notion(%Result{} = result) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    case KidsPrep.Notion.Sync.push_result(result) do
+      {:ok, _} ->
+        update_result_sync_status(result, notion_synced_at: now, notion_sync_error: nil)
+
+      error ->
+        Logger.warning("Notion result sync failed for result #{result.id}: #{inspect(error)}")
+        update_result_sync_status(result, notion_sync_error: inspect(error))
+        {:error, error}
+    end
+  end
+
+  def sync_unsynced_results(limit \\ 100) do
+    Result
+    |> where([r], is_nil(r.notion_synced_at))
+    |> order_by([r], asc: r.inserted_at)
+    |> limit(^limit)
+    |> Repo.all()
+    |> Enum.map(&sync_result_to_notion/1)
   end
 
   def recent_results(limit \\ 12) do
@@ -62,6 +87,20 @@ defmodule KidsPrep.Learning do
     |> order_by([r], desc: r.inserted_at)
     |> limit(^limit)
     |> Repo.all()
+  end
+
+  def unsynced_result_count do
+    Result
+    |> where([r], is_nil(r.notion_synced_at))
+    |> Repo.aggregate(:count)
+  end
+
+  def weak_skill_mistake_count(child_slug, subject, skill) do
+    Result
+    |> where([r], r.child_slug == ^child_slug and r.subject == ^subject)
+    |> Repo.all()
+    |> Enum.flat_map(&(get_in(&1.wrong_questions || %{}, ["items"]) || []))
+    |> Enum.count(&(&1["skill"] == skill))
   end
 
   def performance_dashboard do
@@ -227,5 +266,11 @@ defmodule KidsPrep.Learning do
       answer: question.answer,
       explanation: question.explanation
     }
+  end
+
+  defp update_result_sync_status(result, attrs) do
+    result
+    |> Result.changeset(Map.new(attrs))
+    |> Repo.update()
   end
 end

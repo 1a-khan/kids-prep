@@ -35,6 +35,17 @@ defmodule KidsPrepWeb.QuizLiveTest do
     assert view |> element("button", "Fragen aktualisieren") |> render_click() =~ "Module"
   end
 
+  test "admin can request result sync to Notion", %{conn: conn} do
+    conn = log_in(conn, "admin", "test-admin-password")
+
+    {:ok, view, html} = live(conn, ~p"/")
+
+    assert html =~ "Ergebnisse synchronisieren"
+
+    assert view |> element("button", "Ergebnisse synchronisieren") |> render_click() =~
+             "Ergebnisse nach Notion synchronisiert"
+  end
+
   test "admin can open the in-app performance dashboard", %{conn: conn} do
     conn = log_in(conn, "admin", "test-admin-password")
 

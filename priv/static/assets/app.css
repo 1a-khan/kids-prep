@@ -48,11 +48,14 @@ button {
 .top-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
 }
 
 .user-pill,
 .notion-link {
+  min-height: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 9px 12px;
@@ -351,12 +354,29 @@ h2 {
 
 .result-row {
   display: grid;
-  grid-template-columns: 1.2fr 1fr auto auto;
+  grid-template-columns: 1.2fr 1fr auto auto auto;
   gap: 12px;
   align-items: center;
   padding: 12px;
   border-radius: 8px;
   background: #f7fafc;
+}
+
+.sync-state {
+  justify-self: end;
+  border: 1px solid #f5d26f;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #fff7e0;
+  color: #7a5200;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.sync-state.ok {
+  border-color: #9bdcbd;
+  background: #eafff5;
+  color: #135d3a;
 }
 
 .quiz-head {

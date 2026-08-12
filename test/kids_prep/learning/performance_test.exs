@@ -27,6 +27,20 @@ defmodule KidsPrep.Learning.PerformanceTest do
     assert [%{child: "Mustafa", skill: "Einmaleins", count: 2}] = dashboard.weak_skills
   end
 
+  test "weak skill mistake count accumulates across results" do
+    insert_result("mustafa", "Mustafa", "maths", ~D[2026-08-10], 8, 10, [
+      %{"skill" => "Brüche"}
+    ])
+
+    insert_result("mustafa", "Mustafa", "maths", ~D[2026-08-11], 7, 10, [
+      %{"skill" => "Brüche"},
+      %{"skill" => "Geometrie"}
+    ])
+
+    assert Learning.weak_skill_mistake_count("mustafa", "maths", "Brüche") == 2
+    assert Learning.weak_skill_mistake_count("mustafa", "maths", "Geometrie") == 1
+  end
+
   defp insert_result(child_slug, child_name, subject, date, score, total, wrong_items \\ []) do
     %Result{}
     |> Result.changeset(%{

@@ -150,7 +150,7 @@ After a successful callback, the app writes the OAuth token response to:
 secret/coolify/kids-prep/notion/tokens
 ```
 
-The app includes a background scheduler. When a Notion token is available through OAuth, OpenBao, or `NOTION_TOKEN`, it prepares today's and tomorrow's daily modules. Notion/API errors are logged as warnings and the children still get local generated questions as a fallback.
+The app includes a background scheduler. When a Notion token is available through OAuth, OpenBao, or `NOTION_TOKEN`, it retries unsynced SQLite results, prepares today's and tomorrow's daily modules, and refreshes the local SQLite question cache. Notion/API errors are logged as warnings and the children still get local generated questions as a fallback.
 
 Generate today's Notion modules:
 
@@ -176,9 +176,17 @@ Push recent SQLite results to Notion:
 OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_ROLE_ID=your_approle_role_id OPENBAO_SECRET_ID=your_approle_secret_id OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.push_results
 ```
 
+In a release container such as Coolify, push unsynced SQLite results to Notion:
+
+```bash
+/app/bin/kids_prep eval "KidsPrep.Release.push_results_to_notion()"
+```
+
 When the Notion token is available through OpenBao or `NOTION_TOKEN`, the scheduler prepares Notion modules and warms a local SQLite question cache. The LiveView quiz reads from SQLite first, so children are not waiting on Notion while clicking through the app. If the cache is empty or contains invalid language material, the app falls back to locally generated daily questions.
 
 Admins can click **Fragen aktualisieren** in the app to refresh today's SQLite question cache from Notion after new material is added or corrected.
+
+Admins can click **Ergebnisse synchronisieren** in the app to push unsynced SQLite results into the Notion Results and Weak Skills databases. Result pages are upserted by `Result Key`, and weak-skill pages are upserted by `Weak Skill Key`, so retries do not create duplicate Notion rows.
 
 ## DevSecOps and deployment
 
@@ -215,7 +223,7 @@ CI gates:
 ## Notes
 
 - Questions change daily because they are generated from the child, subject, and date.
-- Local generated questions use a simple adaptive level: after at least two strong recent results in a subject, the next generated set moves one level up for that child and subject. Notion-provided modules remain the source of truth when they exist and pass validation.
+- Local generated questions use a simple adaptive level: after at least two strong recent results in a subject, the next generated set moves one level up for that child and subject. Notion-provided modules remain the source of truth when they exist and pass validation. For a ChatGPT scheduled question generator, read the Notion Results and Weak Skills databases first, then create new question rows that target the weakest skills and increase level only when recent results are consistently strong.
 - Results are saved in `kids_prep_dev.db`.
 - SQLite is fine for Mustafa and Mihrimah using the app in parallel on one local machine. The app uses WAL mode and a busy timeout so reads and short result writes can coexist comfortably.
 - Each subject has enough questions for a focused 45-minute practice block, especially when children read explanations and retry missed questions.

@@ -27,6 +27,8 @@ defmodule KidsPrepWeb.QuizLive do
       |> assign(:started_at, nil)
       |> assign(:saved_result, nil)
       |> assign(:cache_refresh, nil)
+      |> assign(:result_sync, nil)
+      |> assign(:unsynced_result_count, unsynced_result_count(current_user))
       |> assign(:dashboard, nil)
 
     {:ok, socket}
@@ -61,6 +63,29 @@ defmodule KidsPrepWeb.QuizLive do
       {:noreply, assign(socket, :cache_refresh, message)}
     else
       {:noreply, put_flash(socket, :error, "Nur Admins dürfen die Fragen aktualisieren.")}
+    end
+  end
+
+  def handle_event("sync_results", _params, socket) do
+    if Accounts.admin?(socket.assigns.current_user) do
+      results = Learning.sync_unsynced_results(100)
+      ok_count = Enum.count(results, &match?({:ok, _}, &1))
+      error_count = length(results) - ok_count
+
+      message =
+        if error_count == 0 do
+          "#{ok_count} Ergebnisse nach Notion synchronisiert."
+        else
+          "#{ok_count} Ergebnisse synchronisiert, #{error_count} noch offen. Bitte OpenBao/Notion prüfen."
+        end
+
+      {:noreply,
+       socket
+       |> assign(:result_sync, message)
+       |> assign(:recent_results, Learning.recent_results())
+       |> assign(:unsynced_result_count, Learning.unsynced_result_count())}
+    else
+      {:noreply, put_flash(socket, :error, "Nur Admins dürfen Ergebnisse synchronisieren.")}
     end
   end
 
@@ -170,6 +195,8 @@ defmodule KidsPrepWeb.QuizLive do
      |> assign(:answers, [])
      |> assign(:wrong, [])
      |> assign(:cache_refresh, nil)
+     |> assign(:result_sync, nil)
+     |> assign(:unsynced_result_count, unsynced_result_count(socket.assigns.current_user))
      |> assign(:dashboard, nil)}
   end
 
@@ -198,6 +225,7 @@ defmodule KidsPrepWeb.QuizLive do
     socket
     |> assign(:saved_result, result)
     |> assign(:recent_results, Learning.recent_results())
+    |> assign(:unsynced_result_count, unsynced_result_count(socket.assigns.current_user))
     |> assign(:mode, :done)
   end
 
@@ -218,6 +246,9 @@ defmodule KidsPrepWeb.QuizLive do
     Learning.recent_results()
     |> Enum.filter(&(&1.child_slug == child_slug))
   end
+
+  defp unsynced_result_count(%{"role" => "admin"}), do: Learning.unsynced_result_count()
+  defp unsynced_result_count(_current_user), do: 0
 
   defp question_to_map(question) do
     %{

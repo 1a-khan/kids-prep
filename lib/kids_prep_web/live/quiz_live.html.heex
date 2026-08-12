@@ -8,6 +8,12 @@
     <%= if @current_user["role"] == "admin" do %>
       <button class="notion-link" phx-click="dashboard">Leistung</button>
       <button class="notion-link" phx-click="refresh_cache">Fragen aktualisieren</button>
+      <button class="notion-link" phx-click="sync_results">
+        Ergebnisse synchronisieren
+        <%= if @unsynced_result_count > 0 do %>
+          ({@unsynced_result_count})
+        <% end %>
+      </button>
       <a class="notion-link" href={~p"/auth/notion"}>Notion verbinden</a>
     <% end %>
     <a class="notion-link" href={~p"/logout"}>Abmelden</a>
@@ -40,6 +46,9 @@
     <%= if @cache_refresh do %>
       <div class="admin-note">{@cache_refresh}</div>
     <% end %>
+    <%= if @result_sync do %>
+      <div class="admin-note">{@result_sync}</div>
+    <% end %>
 
     <h2>Letzte Ergebnisse</h2>
     <%= if @recent_results == [] do %>
@@ -52,6 +61,15 @@
             <span>{Learning.subject_label(result.subject)}</span>
             <span>{result.score}/{result.total}</span>
             <span>{percent(result.score, result.total)}%</span>
+            <%= if @current_user["role"] == "admin" do %>
+              <span class={["sync-state", result.notion_synced_at && "ok"]}>
+                <%= if result.notion_synced_at do %>
+                  Notion OK
+                <% else %>
+                  Notion offen
+                <% end %>
+              </span>
+            <% end %>
           </div>
         <% end %>
       </div>

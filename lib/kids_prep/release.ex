@@ -36,6 +36,21 @@ defmodule KidsPrep.Release do
     end
   end
 
+  def push_results_to_notion do
+    load_app()
+    Application.ensure_all_started(@app)
+
+    results = KidsPrep.Learning.sync_unsynced_results(500)
+    ok_count = Enum.count(results, &match?({:ok, _}, &1))
+    error_count = length(results) - ok_count
+
+    IO.puts("Synced #{ok_count} SQLite results to Notion. Errors: #{error_count}.")
+
+    results
+    |> Enum.reject(&match?({:ok, _}, &1))
+    |> Enum.each(&IO.puts(inspect(&1)))
+  end
+
   defp repos do
     Application.fetch_env!(@app, :ecto_repos)
   end
