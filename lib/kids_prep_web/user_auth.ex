@@ -19,7 +19,7 @@ defmodule KidsPrepWeb.UserAuth do
 
   def require_authenticated_user(%{assigns: %{current_user: nil}} = conn, _opts) do
     conn
-    |> put_flash(:error, "Please log in first.")
+    |> put_flash(:error, "Bitte melde dich zuerst an.")
     |> redirect(to: "/login")
     |> halt()
   end

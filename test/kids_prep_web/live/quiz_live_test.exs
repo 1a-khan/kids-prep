@@ -22,8 +22,8 @@ defmodule KidsPrepWeb.QuizLiveTest do
 
     {:ok, view, _html} = live(conn, ~p"/")
 
-    assert view |> element("button", "Mihrimah") |> render_click() =~ "Pick a subject"
-    assert view |> element("button", "German") |> render_click() =~ "Question 1"
+    assert view |> element("button", "Mihrimah") |> render_click() =~ "Wähle ein Fach"
+    assert view |> element("button", "Deutsch") |> render_click() =~ "Frage 1"
   end
 
   test "learner logs in directly to their own subject picker", %{conn: conn} do
@@ -32,9 +32,9 @@ defmodule KidsPrepWeb.QuizLiveTest do
     {:ok, view, html} = live(conn, ~p"/")
 
     assert html =~ "Mustafa"
-    assert html =~ "Pick a subject"
-    refute html =~ "Connect Notion"
-    assert view |> element("button", "Maths") |> render_click() =~ "Question 1"
+    assert html =~ "Wähle ein Fach"
+    refute html =~ "Notion verbinden"
+    assert view |> element("button", "Mathe") |> render_click() =~ "Frage 1"
   end
 
   test "login rejects a bad password", %{conn: conn} do
@@ -43,7 +43,7 @@ defmodule KidsPrepWeb.QuizLiveTest do
         "user" => %{"username" => "admin", "password" => "wrong"}
       })
 
-    assert html_response(conn, 200) =~ "Username or password is not correct."
+    assert html_response(conn, 200) =~ "Benutzername oder Passwort ist nicht richtig."
   end
 
   defp log_in(conn, username, password) do

@@ -1,19 +1,19 @@
 <main class="login-shell">
   <section class="login-panel">
-    <p class="eyebrow">Private practice</p>
-    <h1>Log in</h1>
-    <p class="lead">Choose your own account before starting today's practice.</p>
+    <p class="eyebrow">Private Übung</p>
+    <h1>Anmelden</h1>
+    <p class="lead">Wähle dein eigenes Konto, bevor du mit der heutigen Übung beginnst.</p>
 
     <form class="login-form" action={~p"/login"} method="post">
       <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
       <label>
-        Username <input name="user[username]" autocomplete="username" required autofocus />
+        Benutzername <input name="user[username]" autocomplete="username" required autofocus />
       </label>
       <label>
-        Password
+        Passwort
         <input name="user[password]" type="password" autocomplete="current-password" required />
       </label>
-      <button class="btn" type="submit">Log in</button>
+      <button class="btn" type="submit">Anmelden</button>
     </form>
   </section>
 </main>

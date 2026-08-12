@@ -14,7 +14,7 @@ defmodule KidsPrepWeb.NotionAuthController do
 
       {:error, _reason} ->
         conn
-        |> put_flash(:error, "Notion OAuth is not configured in OpenBao yet.")
+        |> put_flash(:error, "Notion OAuth ist in OpenBao noch nicht eingerichtet.")
         |> redirect(to: ~p"/")
     end
   end
@@ -24,14 +24,17 @@ defmodule KidsPrepWeb.NotionAuthController do
          {:ok, _token_response} <- OAuth.exchange_code(code, callback_url(conn)) do
       conn
       |> delete_session(:notion_oauth_state)
-      |> put_flash(:info, "Notion connected. Daily modules can now sync through OpenBao.")
+      |> put_flash(
+        :info,
+        "Notion ist verbunden. Tägliche Module können jetzt über OpenBao synchronisiert werden."
+      )
       |> redirect(to: ~p"/")
     else
       _ ->
         conn
         |> put_flash(
           :error,
-          "Notion connection failed. Check OpenBao OAuth settings and redirect URI."
+          "Notion-Verbindung fehlgeschlagen. Prüfe die OpenBao-OAuth-Einstellungen und die Redirect-URI."
         )
         |> redirect(to: ~p"/")
     end
@@ -39,7 +42,7 @@ defmodule KidsPrepWeb.NotionAuthController do
 
   def callback(conn, _params) do
     conn
-    |> put_flash(:error, "Notion did not return an authorization code.")
+    |> put_flash(:error, "Notion hat keinen Autorisierungscode zurückgegeben.")
     |> redirect(to: ~p"/")
   end
 

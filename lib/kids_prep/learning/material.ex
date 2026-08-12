@@ -5,14 +5,14 @@ defmodule KidsPrep.Learning.Material do
     "mihrimah" => %{
       name: "Mihrimah",
       age: 8,
-      completed_class: "Class 2 in Turkiye",
-      target: "Gymnasium bridge: Klasse 3"
+      completed_class: "2. Klasse in der Türkei abgeschlossen",
+      target: "Vorbereitung auf Klasse 3"
     },
     "mustafa" => %{
       name: "Mustafa",
       age: 10,
-      completed_class: "Class 4 in Turkiye",
-      target: "Gymnasium bridge: Klasse 5"
+      completed_class: "4. Klasse in der Türkei abgeschlossen",
+      target: "Vorbereitung auf Klasse 5"
     }
   }
 
@@ -21,9 +21,9 @@ defmodule KidsPrep.Learning.Material do
   def children, do: @children
   def subjects, do: @subjects
 
-  def subject_label("german"), do: "German"
-  def subject_label("english"), do: "English"
-  def subject_label("maths"), do: "Maths"
+  def subject_label("german"), do: "Deutsch"
+  def subject_label("english"), do: "Englisch"
+  def subject_label("maths"), do: "Mathe"
 
   def child!(slug), do: Map.fetch!(@children, slug)
 
@@ -86,10 +86,10 @@ defmodule KidsPrep.Learning.Material do
           "german",
           "Artikel",
           level,
-          "Which article belongs to '#{noun}'?",
+          "Welcher Artikel passt zu '#{noun}'?",
           ["der", "die", "das"],
           article,
-          "In German every noun has a gender. Say it as one chunk: '#{article} #{noun}'."
+          "Jedes deutsche Nomen hat einen Artikel. Sprich es als kleines Paket: '#{article} #{noun}'."
         )
       end)
 
@@ -100,12 +100,12 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.map(fn {person, form, infinitive} ->
         q(
           "german",
-          "Verb endings",
+          "Verbendungen",
           level,
-          "Choose the correct verb: #{person} ___ (#{infinitive})",
+          "Wähle das richtige Verb: #{person} ___ (#{infinitive})",
           distract_verbs(form),
           form,
-          "Look at the person first. '#{person}' needs '#{form}', so the ending changes."
+          "Schau zuerst auf die Person. Zu '#{person}' passt '#{form}', deshalb ändert sich die Endung."
         )
       end)
 
@@ -124,12 +124,12 @@ defmodule KidsPrep.Learning.Material do
 
         q(
           "german",
-          "Word order",
+          "Satzbau",
           level,
-          "Build the best German sentence.",
+          "Baue den besten deutschen Satz.",
           choices,
           answer,
-          "German sentences usually keep the verb in the second position in simple main clauses."
+          "In einem einfachen deutschen Hauptsatz steht das Verb meistens an zweiter Stelle."
         )
       end)
 
@@ -138,18 +138,18 @@ defmodule KidsPrep.Learning.Material do
 
   defp build_subject("english", level, seed) do
     vocab = [
-      {"library", "a place with books"},
-      {"bridge", "something you cross"},
-      {"quickly", "in a fast way"},
-      {"friendly", "kind and nice"},
-      {"journey", "a trip"},
-      {"answer", "a reply"},
-      {"before", "earlier than"},
-      {"because", "for the reason that"},
-      {"between", "in the middle of two things"},
-      {"careful", "doing something with attention"},
-      {"mistake", "something to learn from"},
-      {"practice", "repeating to get better"}
+      {"library", "ein Ort mit vielen Büchern"},
+      {"bridge", "etwas, worüber man geht oder fährt"},
+      {"quickly", "schnell"},
+      {"friendly", "freundlich und nett"},
+      {"journey", "eine Reise"},
+      {"answer", "eine Antwort"},
+      {"before", "vorher"},
+      {"because", "weil"},
+      {"between", "zwischen zwei Dingen"},
+      {"careful", "vorsichtig und aufmerksam"},
+      {"mistake", "ein Fehler, aus dem man lernen kann"},
+      {"practice", "üben, um besser zu werden"}
     ]
 
     grammar = [
@@ -167,14 +167,14 @@ defmodule KidsPrep.Learning.Material do
 
     reading = [
       {"Lena packed her bag before breakfast because the bus arrived early.",
-       "Why did Lena pack before breakfast?", "because the bus arrived early"},
-      {"The children shared pencils when one box was empty.", "What did the children share?",
+       "Warum packte Lena ihre Tasche vor dem Frühstück?", "because the bus arrived early"},
+      {"The children shared pencils when one box was empty.", "Was teilten die Kinder?",
        "pencils"},
-      {"A small map helped the family find the new school.", "What helped the family?",
+      {"A small map helped the family find the new school.", "Was half der Familie?",
        "a small map"},
       {"After the lesson, Mustafa checked his answer and fixed one mistake.",
-       "What did Mustafa fix?", "one mistake"},
-      {"Mihrimah read the question twice before choosing.", "What did Mihrimah read twice?",
+       "Was korrigierte Mustafa?", "one mistake"},
+      {"Mihrimah read the question twice before choosing.", "Was las Mihrimah zweimal?",
        "the question"}
     ]
 
@@ -184,16 +184,17 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.take(10)
       |> Enum.map(fn {word, meaning} ->
         choices =
-          [meaning, "a kind of food", "a number sentence"] |> rotate(seed + byte_size(word))
+          [meaning, "eine Sorte Essen", "eine Rechenaufgabe"]
+          |> rotate(seed + byte_size(word))
 
         q(
           "english",
-          "Vocabulary",
+          "Wortschatz",
           level,
-          "What does '#{word}' mean?",
+          "Was bedeutet das englische Wort '#{word}'?",
           choices,
           meaning,
-          "Read the whole word and connect it to a picture in your head. '#{word}' means #{meaning}."
+          "Lies das ganze Wort und stelle dir ein Bild dazu vor. '#{word}' bedeutet: #{meaning}."
         )
       end)
 
@@ -204,12 +205,12 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.map(fn {prompt, answer, choices} ->
         q(
           "english",
-          "Grammar",
+          "Grammatik",
           level,
           prompt,
           choices,
           answer,
-          "Check the subject and the time word. Tiny words and endings carry the grammar."
+          "Schau auf die Person und auf die Zeit im Satz. Kleine Wörter und Endungen zeigen die Grammatik."
         )
       end)
 
@@ -220,12 +221,12 @@ defmodule KidsPrep.Learning.Material do
       |> Enum.map(fn {text, prompt, answer} ->
         q(
           "english",
-          "Reading",
+          "Lesen",
           level,
           "#{text}\n\n#{prompt}",
           [answer, "breakfast", "the new teacher"],
           answer,
-          "The answer is inside the text. Go back and underline the words that prove it."
+          "Die Antwort steht im Text. Lies den Satz noch einmal und suche die Wörter, die es beweisen."
         )
       end)
 
@@ -248,7 +249,7 @@ defmodule KidsPrep.Learning.Material do
           "#{a} + #{b} = ?",
           number_choices(answer, seed + n),
           answer,
-          "Add tens first, then ones. You can also jump forward by #{b} from #{a}."
+          "Rechne zuerst die Zehner, dann die Einer. Du kannst auch von #{a} aus #{b} Schritte weiterzählen."
         )
       end
 
@@ -260,12 +261,12 @@ defmodule KidsPrep.Learning.Material do
 
         q(
           "maths",
-          "Subtraction",
+          "Subtraktion",
           level,
           "#{a} - #{b} = ?",
           number_choices(answer, seed + n * 2),
           answer,
-          "Break the smaller number into tens and ones, then count back in two calm steps."
+          "Zerlege die kleinere Zahl in Zehner und Einer. Dann zählst du in zwei ruhigen Schritten zurück."
         )
       end
 
@@ -277,12 +278,12 @@ defmodule KidsPrep.Learning.Material do
 
         q(
           "maths",
-          "Times tables",
+          "Einmaleins",
           level,
           "#{a} x #{b} = ?",
           number_choices(answer, seed + n * 3),
           answer,
-          "Multiplication is equal groups: #{a} groups of #{b}. Skip-count to check your answer."
+          "Malnehmen bedeutet gleich große Gruppen: #{a} Gruppen mit je #{b}. Zähle in Sprüngen nach."
         )
       end
 
@@ -294,12 +295,12 @@ defmodule KidsPrep.Learning.Material do
 
         q(
           "maths",
-          "Word problem",
+          "Textaufgabe",
           level,
-          "There are #{apples} apples. The family eats #{eaten}. How many are left?",
+          "Es gibt #{apples} Äpfel. Die Familie isst #{eaten}. Wie viele bleiben übrig?",
           number_choices(answer, seed + n * 4),
           answer,
-          "'Left' means subtract. Start with #{apples}, take away #{eaten}."
+          "'Übrig bleiben' bedeutet: minus rechnen. Starte mit #{apples} und nimm #{eaten} weg."
         )
       end
 

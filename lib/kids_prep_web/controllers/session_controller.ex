@@ -13,12 +13,12 @@ defmodule KidsPrepWeb.SessionController do
         conn
         |> configure_session(renew: true)
         |> put_session(:current_user, user)
-        |> put_flash(:info, "Welcome, #{user["display_name"]}.")
+        |> put_flash(:info, "Willkommen, #{user["display_name"]}.")
         |> redirect(to: ~p"/")
 
       :error ->
         conn
-        |> put_flash(:error, "Username or password is not correct.")
+        |> put_flash(:error, "Benutzername oder Passwort ist nicht richtig.")
         |> render(:new)
     end
   end

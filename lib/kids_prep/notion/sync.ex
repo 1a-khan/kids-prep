@@ -227,7 +227,7 @@ defmodule KidsPrep.Notion.Sync do
         "Priority" => Properties.number(min(length(items) * 2, 10)),
         "Last Seen" => Properties.date(result.quiz_date),
         "Status" => Properties.status("In progress"),
-        "Notes" => Properties.text("Automatically created from wrong answers.")
+        "Notes" => Properties.text("Automatisch aus falschen Antworten erstellt.")
       }
 
       Client.create_page(Client.database_id(:weak_skills_database_id), properties)

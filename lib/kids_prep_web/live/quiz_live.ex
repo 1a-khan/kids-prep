@@ -39,7 +39,7 @@ defmodule KidsPrepWeb.QuizLive do
     if Accounts.allowed_child?(socket.assigns.current_user, child_slug) do
       {:noreply, assign(socket, child_slug: child_slug, mode: :subject)}
     else
-      {:noreply, put_flash(socket, :error, "This learner is not available for your account.")}
+      {:noreply, put_flash(socket, :error, "Dieses Kind ist für dein Konto nicht verfügbar.")}
     end
   end
 
@@ -70,8 +70,9 @@ defmodule KidsPrepWeb.QuizLive do
 
     feedback = %{
       correct?: correct?,
-      title: if(correct?, do: "Correct. Nice thinking.", else: "Not quite yet."),
-      body: if(correct?, do: "Keep going while your brain is warm.", else: question.explanation)
+      title: if(correct?, do: "Richtig. Gut gedacht!", else: "Noch nicht ganz richtig."),
+      body:
+        if(correct?, do: "Weiter so, dein Kopf ist gerade gut warm.", else: question.explanation)
     }
 
     answer = %{

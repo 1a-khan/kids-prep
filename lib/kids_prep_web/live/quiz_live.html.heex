@@ -1,14 +1,14 @@
 <section class="topbar">
   <button class="brand" phx-click="home">
     <span class="mark">MM</span>
-    <span>Gymnasium Prep</span>
+    <span>Gymnasium-Vorbereitung</span>
   </button>
   <div class="top-actions">
     <span class="user-pill">{@current_user["display_name"]}</span>
     <%= if @current_user["role"] == "admin" do %>
-      <a class="notion-link" href={~p"/auth/notion"}>Connect Notion</a>
+      <a class="notion-link" href={~p"/auth/notion"}>Notion verbinden</a>
     <% end %>
-    <a class="notion-link" href={~p"/logout"}>Logout</a>
+    <a class="notion-link" href={~p"/logout"}>Abmelden</a>
     <div class="date-pill">{Date.utc_today()}</div>
   </div>
 </section>
@@ -16,10 +16,10 @@
 <%= if @mode == :home do %>
   <section class="intro">
     <div>
-      <p class="eyebrow">Daily 45-minute practice</p>
-      <h1>Choose your learner</h1>
+      <p class="eyebrow">Tägliche Übung · etwa 45 Minuten</p>
+      <h1>Wähle dein Kind</h1>
       <p class="lead">
-        German, English, and Maths practice for the move from Turkiye to Germany.
+        Deutsch, Englisch und Mathe für den Start in Deutschland.
       </p>
     </div>
   </section>
@@ -28,16 +28,16 @@
     <%= for {slug, child} <- @children do %>
       <button class="learner-card" phx-click="choose_child" phx-value-id={slug}>
         <span class="learner-name">{child.name}</span>
-        <span>{child.age} years old</span>
+        <span>{child.age} Jahre alt</span>
         <strong>{child.target}</strong>
       </button>
     <% end %>
   </section>
 
   <section class="history">
-    <h2>Recent Results</h2>
+    <h2>Letzte Ergebnisse</h2>
     <%= if @recent_results == [] do %>
-      <p>No saved practice yet.</p>
+      <p>Noch keine gespeicherte Übung.</p>
     <% else %>
       <div class="results-list">
         <%= for result <- @recent_results do %>
@@ -58,7 +58,7 @@
   <section class="intro compact">
     <div>
       <p class="eyebrow">{child.name}</p>
-      <h1>Pick a subject</h1>
+      <h1>Wähle ein Fach</h1>
     </div>
   </section>
 
@@ -67,7 +67,7 @@
       <% count = length(Learning.daily_questions(@child_slug, subject)) %>
       <button class={"subject-card #{subject}"} phx-click="choose_subject" phx-value-id={subject}>
         <span>{Learning.subject_label(subject)}</span>
-        <strong>{count} questions · about 45 minutes</strong>
+        <strong>{count} Fragen · etwa 45 Minuten</strong>
       </button>
     <% end %>
   </section>
@@ -78,7 +78,7 @@
   <section class="quiz-head">
     <div>
       <p class="eyebrow">{Learning.subject_label(@subject)} · {question.skill}</p>
-      <h1>Question {@index + 1} of {length(@questions)}</h1>
+      <h1>Frage {@index + 1} von {length(@questions)}</h1>
     </div>
     <progress value={@index + 1} max={length(@questions)}></progress>
   </section>
@@ -108,7 +108,7 @@
       <div class={["feedback", @feedback.correct? && "ok"]}>
         <strong>{@feedback.title}</strong>
         <p>{@feedback.body}</p>
-        <button class="btn next" phx-click="next">Next</button>
+        <button class="btn next" phx-click="next">Weiter</button>
       </div>
     <% end %>
   </section>
@@ -118,21 +118,21 @@
   <% total = length(@questions) %>
   <% score = Enum.count(@answers, & &1.correct?) %>
   <section class="done">
-    <p class="eyebrow">Saved Result</p>
-    <h1>{score}/{total} correct</h1>
+    <p class="eyebrow">Ergebnis gespeichert</p>
+    <h1>{score}/{total} richtig</h1>
     <div class="score-ring">{percent(score, total)}%</div>
     <p class="lead">
       <%= if @wrong == [] do %>
-        Brilliant. No missed questions in this round.
+        Super. In dieser Runde war keine Frage falsch.
       <% else %>
-        Practice the missed questions again like a playground.
+        Übe die falschen Fragen noch einmal wie auf einem Spielplatz.
       <% end %>
     </p>
     <div class="actions">
       <%= if @wrong != [] do %>
-        <button class="btn" phx-click="retry_wrong">Repeat wrong questions</button>
+        <button class="btn" phx-click="retry_wrong">Falsche Fragen wiederholen</button>
       <% end %>
-      <button class="btn ghost" phx-click="home">Back home</button>
+      <button class="btn ghost" phx-click="home">Zur Startseite</button>
     </div>
   </section>
 <% end %>
