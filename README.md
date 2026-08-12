@@ -95,7 +95,9 @@ Run the app with OpenBao access:
 
 ```bash
 export OPENBAO_ADDR=http://127.0.0.1:8200
-export OPENBAO_TOKEN=your_openbao_token
+export OPENBAO_ROLE_ID=your_approle_role_id
+export OPENBAO_SECRET_ID=your_approle_secret_id
+export OPENBAO_APPROLE_AUTH_PATH=approle
 export OPENBAO_KV_MOUNT=secret
 export OPENBAO_APP_SECRET_PATH=coolify/kids-prep
 export OPENBAO_NOTION_SECRET_PATH=kids-prep/notion
@@ -114,7 +116,9 @@ For Coolify, keep env vars limited to bootstrap/runtime necessities:
 - `DATABASE_PATH`
 - `SECRET_KEY_BASE`
 - `OPENBAO_ADDR`
-- `OPENBAO_TOKEN` or a stronger machine-auth bootstrap method
+- `OPENBAO_ROLE_ID`
+- `OPENBAO_SECRET_ID`
+- `OPENBAO_APPROLE_AUTH_PATH`
 - `OPENBAO_KV_MOUNT`
 - `OPENBAO_APP_SECRET_PATH`
 
@@ -126,7 +130,7 @@ secret/coolify/kids-prep/notion/oauth
 secret/coolify/kids-prep/notion/tokens
 ```
 
-OpenBao tokens can expire. Do not use your personal/root token in Coolify. For production, prefer AppRole, JWT/OIDC auth, or a short-lived renewable token scoped only to `secret/data/coolify/kids-prep/*`.
+OpenBao tokens can expire. Do not use your personal/root token in Coolify. For production, use AppRole with a policy scoped only to `secret/data/coolify/kids-prep/*`.
 
 Connect OAuth locally:
 
@@ -151,13 +155,13 @@ The app includes a background scheduler. When a Notion token is available throug
 Generate today's Notion modules:
 
 ```bash
-OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_TOKEN=your_openbao_token OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.generate_daily
+OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_ROLE_ID=your_approle_role_id OPENBAO_SECRET_ID=your_approle_secret_id OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.generate_daily
 ```
 
 Push recent SQLite results to Notion:
 
 ```bash
-OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_TOKEN=your_openbao_token OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.push_results
+OPENBAO_ADDR=http://127.0.0.1:8200 OPENBAO_ROLE_ID=your_approle_role_id OPENBAO_SECRET_ID=your_approle_secret_id OPENBAO_APP_SECRET_PATH=coolify/kids-prep mix kids_prep.notion.push_results
 ```
 
 When the Notion token is available through OpenBao or `NOTION_TOKEN`, the app tries Notion first for today's module and falls back to local generated questions if Notion is unavailable.

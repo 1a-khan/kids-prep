@@ -78,10 +78,21 @@ The current app reads Notion config, OAuth config, and Notion token data from Op
 
 ## OpenBao Bootstrap
 
-The app still needs an identity to read OpenBao. Avoid long-lived broad tokens. Prefer one of:
+The app still needs an identity to read OpenBao. Avoid long-lived broad tokens. Use:
 
-- AppRole with wrapped secret ID.
-- JWT/OIDC auth if Coolify can provide a trusted workload identity.
-- Short-lived renewable token scoped to `secret/data/coolify/kids-prep/*`.
+- AppRole with policy `kids-prep`.
+- A secret ID with limited uses and a bounded TTL where practical.
+- Rotation when deploying or after staff/device changes.
 
-If a token expires, Notion sync and result push will fail closed and the app will fall back to local generated material where possible.
+Coolify env:
+
+```text
+OPENBAO_ADDR
+OPENBAO_ROLE_ID
+OPENBAO_SECRET_ID
+OPENBAO_APPROLE_AUTH_PATH=approle
+OPENBAO_KV_MOUNT=secret
+OPENBAO_APP_SECRET_PATH=coolify/kids-prep
+```
+
+The app exchanges `role_id` + `secret_id` for a short-lived OpenBao client token and caches it until shortly before expiry. If that token expires, the app logs in again with AppRole. If AppRole credentials are invalid or revoked, Notion sync and result push fail closed and local generated material is used where possible.
