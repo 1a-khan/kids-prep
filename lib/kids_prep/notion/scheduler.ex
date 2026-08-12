@@ -31,11 +31,19 @@ defmodule KidsPrep.Notion.Scheduler do
   defp generate_daily_modules(date) do
     case Sync.ensure_daily_modules(date) do
       results when is_list(results) ->
+        cache_results = KidsPrep.Learning.refresh_daily_cache(date)
         errors = Enum.reject(results, &match?({:ok, _}, &1))
+        cache_errors = Enum.reject(cache_results, &match?({:ok, _}, &1))
 
         if errors != [] do
           Logger.warning(
             "Notion daily module generation had errors for #{date}: #{inspect(errors)}"
+          )
+        end
+
+        if cache_errors != [] do
+          Logger.warning(
+            "SQLite daily cache refresh had errors for #{date}: #{inspect(cache_errors)}"
           )
         end
 

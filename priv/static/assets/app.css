@@ -60,6 +60,7 @@ button {
   color: var(--ink);
   font-weight: 800;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .user-pill {
@@ -222,6 +223,16 @@ h2 {
 
 .history {
   padding: 22px;
+}
+
+.admin-note {
+  margin-bottom: 16px;
+  border: 1px solid #9bdcbd;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #eafff5;
+  color: #135d3a;
+  font-weight: 800;
 }
 
 .results-list {

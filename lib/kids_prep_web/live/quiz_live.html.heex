@@ -6,6 +6,7 @@
   <div class="top-actions">
     <span class="user-pill">{@current_user["display_name"]}</span>
     <%= if @current_user["role"] == "admin" do %>
+      <button class="notion-link" phx-click="refresh_cache">Fragen aktualisieren</button>
       <a class="notion-link" href={~p"/auth/notion"}>Notion verbinden</a>
     <% end %>
     <a class="notion-link" href={~p"/logout"}>Abmelden</a>
@@ -35,6 +36,10 @@
   </section>
 
   <section class="history">
+    <%= if @cache_refresh do %>
+      <div class="admin-note">{@cache_refresh}</div>
+    <% end %>
+
     <h2>Letzte Ergebnisse</h2>
     <%= if @recent_results == [] do %>
       <p>Noch keine gespeicherte Übung.</p>
@@ -64,7 +69,7 @@
 
   <section class="subject-grid">
     <%= for subject <- @subjects do %>
-      <% count = length(Learning.daily_questions(@child_slug, subject)) %>
+      <% count = Learning.daily_question_count(@child_slug, subject) %>
       <button class={"subject-card #{subject}"} phx-click="choose_subject" phx-value-id={subject}>
         <span>{Learning.subject_label(subject)}</span>
         <strong>{count} Fragen · etwa 45 Minuten</strong>
