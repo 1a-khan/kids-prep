@@ -16,6 +16,26 @@ defmodule KidsPrep.Release do
     {:ok, _apps, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
   end
 
+  def repair_german_material do
+    load_app()
+    Application.ensure_all_started(@app)
+
+    case KidsPrep.Notion.LanguageRepair.repair_german_material() do
+      results when is_list(results) ->
+        ok_count = Enum.count(results, &match?({:ok, _}, &1))
+        error_count = length(results) - ok_count
+
+        IO.puts("Repaired #{ok_count} Deutsch/Mathe Notion rows. Errors: #{error_count}.")
+
+        results
+        |> Enum.reject(&match?({:ok, _}, &1))
+        |> Enum.each(&IO.puts(inspect(&1)))
+
+      error ->
+        IO.puts("Repair failed: #{inspect(error)}")
+    end
+  end
+
   defp repos do
     Application.fetch_env!(@app, :ecto_repos)
   end
