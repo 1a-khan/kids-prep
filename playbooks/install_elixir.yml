@@ -1,0 +1,36 @@
+---
+- name: Install Erlang, Elixir, Mix, and Phoenix prerequisites
+  hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Refresh apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Erlang, Elixir, SQLite, and build tools
+      ansible.builtin.apt:
+        name:
+          - erlang
+          - erlang-dev
+          - elixir
+          - build-essential
+          - inotify-tools
+          - sqlite3
+          - libsqlite3-dev
+          - git
+          - curl
+          - ca-certificates
+        state: present
+
+    - name: Show Elixir version
+      ansible.builtin.command: elixir --version
+      changed_when: false
+      register: elixir_version
+
+    - name: Print Elixir version
+      ansible.builtin.debug:
+        var: elixir_version.stdout_lines
+

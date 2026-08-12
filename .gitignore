@@ -1,0 +1,13 @@
+/_build/
+/deps/
+/.elixir_ls/
+/.agents/
+/.ansible/
+/.codex/
+/cover/
+/kids_prep_*.db*
+/priv/generated_material/
+/.env
+/.env.*
+!/.env.example
+erl_crash.dump

@@ -1,0 +1,35 @@
+services:
+  kids-prep:
+    image: ghcr.io/1a-khan/kids-prep:latest
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PHX_HOST: kids-prep.miak-it.com
+      PORT: "4000"
+      DATABASE_PATH: /app/data/kids_prep_prod.db
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      KIDS_PREP_MIHRIMAH_PASSWORD: ${KIDS_PREP_MIHRIMAH_PASSWORD}
+      KIDS_PREP_MUSTAFA_PASSWORD: ${KIDS_PREP_MUSTAFA_PASSWORD}
+      KIDS_PREP_ADMIN_PASSWORD: ${KIDS_PREP_ADMIN_PASSWORD}
+      OPENBAO_ADDR: ${OPENBAO_ADDR}
+      OPENBAO_TOKEN: ${OPENBAO_TOKEN}
+      OPENBAO_KV_MOUNT: ${OPENBAO_KV_MOUNT:-secret}
+      OPENBAO_APP_SECRET_PATH: ${OPENBAO_APP_SECRET_PATH:-coolify/kids-prep}
+      KIDS_PREP_NOTION_HUB_PAGE_ID: ${KIDS_PREP_NOTION_HUB_PAGE_ID}
+      KIDS_PREP_NOTION_QUESTIONS_DATABASE_ID: ${KIDS_PREP_NOTION_QUESTIONS_DATABASE_ID}
+      KIDS_PREP_NOTION_DAILY_MODULES_DATABASE_ID: ${KIDS_PREP_NOTION_DAILY_MODULES_DATABASE_ID}
+      KIDS_PREP_NOTION_RESULTS_DATABASE_ID: ${KIDS_PREP_NOTION_RESULTS_DATABASE_ID}
+      KIDS_PREP_NOTION_WEAK_SKILLS_DATABASE_ID: ${KIDS_PREP_NOTION_WEAK_SKILLS_DATABASE_ID}
+    volumes:
+      - kids-prep-data:/app/data
+    healthcheck:
+      test: ["CMD", "/app/bin/kids_prep", "pid"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: ["/bin/sh", "-c", "/app/bin/migrate && /app/bin/server"]
+
+volumes:
+  kids-prep-data:

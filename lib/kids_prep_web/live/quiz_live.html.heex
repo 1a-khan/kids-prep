@@ -1,0 +1,138 @@
+<section class="topbar">
+  <button class="brand" phx-click="home">
+    <span class="mark">MM</span>
+    <span>Gymnasium Prep</span>
+  </button>
+  <div class="top-actions">
+    <span class="user-pill">{@current_user["display_name"]}</span>
+    <%= if @current_user["role"] == "admin" do %>
+      <a class="notion-link" href={~p"/auth/notion"}>Connect Notion</a>
+    <% end %>
+    <a class="notion-link" href={~p"/logout"}>Logout</a>
+    <div class="date-pill">{Date.utc_today()}</div>
+  </div>
+</section>
+
+<%= if @mode == :home do %>
+  <section class="intro">
+    <div>
+      <p class="eyebrow">Daily 45-minute practice</p>
+      <h1>Choose your learner</h1>
+      <p class="lead">
+        German, English, and Maths practice for the move from Turkiye to Germany.
+      </p>
+    </div>
+  </section>
+
+  <section class="choice-grid">
+    <%= for {slug, child} <- @children do %>
+      <button class="learner-card" phx-click="choose_child" phx-value-id={slug}>
+        <span class="learner-name">{child.name}</span>
+        <span>{child.age} years old</span>
+        <strong>{child.target}</strong>
+      </button>
+    <% end %>
+  </section>
+
+  <section class="history">
+    <h2>Recent Results</h2>
+    <%= if @recent_results == [] do %>
+      <p>No saved practice yet.</p>
+    <% else %>
+      <div class="results-list">
+        <%= for result <- @recent_results do %>
+          <div class="result-row">
+            <strong>{result.child_name}</strong>
+            <span>{Learning.subject_label(result.subject)}</span>
+            <span>{result.score}/{result.total}</span>
+            <span>{percent(result.score, result.total)}%</span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<%= if @mode == :subject do %>
+  <% child = Learning.child!(@child_slug) %>
+  <section class="intro compact">
+    <div>
+      <p class="eyebrow">{child.name}</p>
+      <h1>Pick a subject</h1>
+    </div>
+  </section>
+
+  <section class="subject-grid">
+    <%= for subject <- @subjects do %>
+      <% count = length(Learning.daily_questions(@child_slug, subject)) %>
+      <button class={"subject-card #{subject}"} phx-click="choose_subject" phx-value-id={subject}>
+        <span>{Learning.subject_label(subject)}</span>
+        <strong>{count} questions · about 45 minutes</strong>
+      </button>
+    <% end %>
+  </section>
+<% end %>
+
+<%= if @mode in [:quiz, :retry] and length(@questions) > 0 do %>
+  <% question = Enum.at(@questions, @index) %>
+  <section class="quiz-head">
+    <div>
+      <p class="eyebrow">{Learning.subject_label(@subject)} · {question.skill}</p>
+      <h1>Question {@index + 1} of {length(@questions)}</h1>
+    </div>
+    <progress value={@index + 1} max={length(@questions)}></progress>
+  </section>
+
+  <section class="question-panel">
+    <p class="prompt">{question.prompt}</p>
+    <div class="answers">
+      <%= for choice <- question.choices do %>
+        <button
+          class={[
+            "answer",
+            @selected == to_string(choice) && "selected",
+            @feedback && to_string(choice) == to_string(question.answer) && "correct",
+            @feedback && @selected == to_string(choice) &&
+              to_string(choice) != to_string(question.answer) && "wrong"
+          ]}
+          disabled={not is_nil(@feedback)}
+          phx-click="answer"
+          phx-value-choice={choice}
+        >
+          {choice}
+        </button>
+      <% end %>
+    </div>
+
+    <%= if @feedback do %>
+      <div class={["feedback", @feedback.correct? && "ok"]}>
+        <strong>{@feedback.title}</strong>
+        <p>{@feedback.body}</p>
+        <button class="btn next" phx-click="next">Next</button>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<%= if @mode == :done do %>
+  <% total = length(@questions) %>
+  <% score = Enum.count(@answers, & &1.correct?) %>
+  <section class="done">
+    <p class="eyebrow">Saved Result</p>
+    <h1>{score}/{total} correct</h1>
+    <div class="score-ring">{percent(score, total)}%</div>
+    <p class="lead">
+      <%= if @wrong == [] do %>
+        Brilliant. No missed questions in this round.
+      <% else %>
+        Practice the missed questions again like a playground.
+      <% end %>
+    </p>
+    <div class="actions">
+      <%= if @wrong != [] do %>
+        <button class="btn" phx-click="retry_wrong">Repeat wrong questions</button>
+      <% end %>
+      <button class="btn ghost" phx-click="home">Back home</button>
+    </div>
+  </section>
+<% end %>
