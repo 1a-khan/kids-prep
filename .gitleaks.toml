@@ -1,0 +1,7 @@
+title = "Kids Prep gitleaks configuration"
+
+[[allowlists]]
+description = "Phoenix dev/test secret_key_base values are framework-local signing salts, not production secrets."
+condition = "AND"
+paths = ['''config/(dev|test)\.exs''']
+regexes = ['''secret_key_base:\s*("[^"]+"|\n\s*"[^"]+")''']
