@@ -14,6 +14,20 @@
 - `trivy`: scans the final Docker image for high and critical vulnerabilities.
 - Dependabot: creates update PRs for Mix and GitHub Actions dependencies.
 
+## Dependabot Maintenance Flow
+
+Dependabot version-update PRs target `maintenance/dependabot` instead of `main`.
+
+Use this rhythm:
+
+1. Review and merge safe Dependabot PRs into `maintenance/dependabot`.
+2. Let CI run on each Dependabot PR.
+3. Periodically open one PR from `maintenance/dependabot` into `main`.
+4. Merge that PR after checks pass.
+5. A production image is published only when the maintenance branch is merged into `main`.
+
+This keeps dependency updates easy to collect without publishing a new production image for every small Dependabot PR.
+
 ## Image Strategy
 
 The Docker image is multi-stage:
