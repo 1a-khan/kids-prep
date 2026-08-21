@@ -1,9 +1,11 @@
 defmodule KidsPrep.Notion.Properties do
   @moduledoc false
 
-  def title(value), do: %{title: [%{type: "text", text: %{content: to_string(value)}}]}
+  @notion_text_content_limit 2_000
+
+  def title(value), do: %{title: rich_text_chunks(value)}
   def text(nil), do: %{rich_text: []}
-  def text(value), do: %{rich_text: [%{type: "text", text: %{content: to_string(value)}}]}
+  def text(value), do: %{rich_text: rich_text_chunks(value)}
   def select(value), do: %{select: %{name: to_string(value)}}
   def status(value), do: %{status: %{name: to_string(value)}}
   def number(value), do: %{number: value}
@@ -25,4 +27,15 @@ defmodule KidsPrep.Notion.Properties do
   end
 
   def select_name(property) when is_map(property), do: get_in(property, ["select", "name"])
+
+  defp rich_text_chunks(value) do
+    value
+    |> to_string()
+    |> String.graphemes()
+    |> Enum.chunk_every(@notion_text_content_limit)
+    |> Enum.map(fn chunk ->
+      content = Enum.join(chunk)
+      %{type: "text", text: %{content: content}}
+    end)
+  end
 end
